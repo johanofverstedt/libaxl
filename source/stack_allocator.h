@@ -36,7 +36,7 @@ struct dynamic_stack_vector_allocator : vector_allocator {
 	int size;
 	double *memory;
 
-	expicit dynamic_stack_vector_allocator(int size) : used(0), size(size) {
+	explicit dynamic_stack_vector_allocator(int size, bool resizable) : used(0), size(size) {
 		assert(size > 0);
 
 		memory = new double[size];
@@ -62,7 +62,7 @@ struct dynamic_stack_vector_allocator : vector_allocator {
 
 	virtual void pop(int handle) override {
 		assert(used >= handle);
-		
+
 		used = handle;
 	}	
 };

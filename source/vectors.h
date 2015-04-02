@@ -14,6 +14,19 @@ struct vector {
 	int stride;
 	int width;
 	vector_allocator* allocator;
+
+	inline
+	vector operator+(vector in);
+	inline
+	vector operator-(vector in);
+	inline
+	vector operator*(vector in);
+	inline
+	vector operator+=(vector in);
+	inline
+	vector operator-=(vector in);
+	inline
+	vector operator*=(vector in);
 };
 
 //
@@ -21,8 +34,16 @@ struct vector {
 //
 
 inline
+bool check(vector v) {
+	bool result = (v.array != nullptr) && (stride >= 1) &&
+	(width >= 1) && (allocator != nullptr);
+
+	return result;
+}
+
+inline
 int length(vector v) {
-	assert(stride != 0);
+	assert(check(v));
 
 	auto result = (v.end - v.start) / v.stride;
 
@@ -32,6 +53,16 @@ int length(vector v) {
 inline
 bool is_empty(vector v) {
 	return length(v) == 0;
+}
+
+inline
+bool is_reverse(vector v) {
+	return v.stride < 0;
+}
+
+inline
+bool is_sequential(vector v) {
+	return (v.stride == 1) || (v.stride == -1);
 }
 
 inline
@@ -248,6 +279,8 @@ inline
 vector copy(vector in) {
 	vector result;
 
+	assert(check(in));
+
 	auto len = length(in);
 	auto size = len * in.width;
 
@@ -271,6 +304,113 @@ vector copy(vector in) {
 	}
 
 	return result;
+}
+
+template <typename BinaryOp>
+inline
+vector apply_op(vector a, vector b, BinaryOp op) {
+	vector result;
+
+	int a_len = length(a);
+	int b_len = length(b);
+
+	if(a_len == 0 || b_len == 0) {
+		result.array = a.array;
+		result.start = 0;
+		result.end = 0;
+		result.stride = 1;
+		result.width = a.width;
+		result.allocator = a.allocator;
+
+		return result;
+	}
+
+	//
+	//  Telescoping
+	//
+
+	if(a_len == 1 || b_len == 1) {
+		//Todo: fix it
+		assert(false);
+		return result;
+	}
+
+	assert(a.width == b.width);
+
+	int out_len = minimum(a_len, b_len);
+
+	result = make_uninitialized_vector(a.allocator, out_len, a.width);
+
+	for(int i = 0; i < out_len; ++i) {
+		for(int j = 0; j < result.width; ++j) {
+			result.array[i * result.width + j] =
+			  op(a.array[start + i * a.stride + j], b.array[start + i * b.stride + j]);
+		}
+	}
+
+	return result;
+}
+
+//
+//  vector operator overloads
+//
+
+struct binary_add_op {
+	inline
+	double operator()(double a, double b) { return a + b; }
+};
+struct binary_sub_op {
+	inline
+	double operator()(double a, double b) { return a - b; }
+};
+struct binary_mul_op {
+	inline
+	double operator()(double a, double b) { return a * b; }
+};
+
+inline
+vector vector::operator+(vector in) {
+	vector result;
+
+	result = apply_op(*this, in, binary_add_op());
+	
+	return result;
+}
+
+inline
+vector vector::operator-(vector in) {
+	vector result;
+
+	result = apply_op(*this, in, binary_sub_op());
+
+	return result;
+}
+
+inline
+vector vector::operator*(vector in) {
+	vector result;
+
+	result = apply_op(*this, in, binary_mul_op());
+	
+	return result;
+}
+
+//  Todo: replace with faster versions, that don't allocate new memory
+
+inline
+vector vector::operator+=(vector in) {
+	(*this) = (*this) + in;
+	return *this;
+}
+inline
+vector vector::operator-=(vector in) {
+	(*this) = (*this) - in;
+	return *this;
+}
+inline
+vector vector::operator*=(vector in) {
+	(*this) = (*this) * in;
+	return *this;
 }
 }
 

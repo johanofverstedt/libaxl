@@ -5,6 +5,8 @@
 #include <cassert>
 #include <cstring>
 
+#define LIBAXL_ERROR(msg) if(msg) assert(false, (msg)); else assert(false)
+
 namespace libaxl {
 template <typename T>
 inline
