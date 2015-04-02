@@ -6,11 +6,11 @@
 
 namespace libaxl {
 template <int size>
-struct stack_vector_allocator {
+struct stack_vector_allocator : vector_allocator {
 	int used;
 	double memory[size];
 
-	double* alloc(int count) {
+	virtual double* alloc(int count) override {
 		assert(count >= 0);
 		assert(used + count <= size);
 
@@ -19,9 +19,19 @@ struct stack_vector_allocator {
 
 		return result;
 	}
+
+	virtual int push() override {
+		return used;
+	}
+
+	virtual void pop(int handle) override {
+		assert(used >= handle);
+		
+		used = handle;
+	}
 };
 
-struct dynamic_stack_vector_allocator {
+struct dynamic_stack_vector_allocator : vector_allocator {
 	int used;
 	int size;
 	double *memory;
@@ -36,7 +46,7 @@ struct dynamic_stack_vector_allocator {
 		delete[] memory;
 	}
 
-	double* alloc(int count) {
+	virtual double* alloc(int count) override {
 		assert(count >= 0);
 		assert(used + count <= size);
 
@@ -45,25 +55,17 @@ struct dynamic_stack_vector_allocator {
 
 		return result;
 	}
+
+	virtual int push() override {
+		return used;
+	}
+
+	virtual void pop(int handle) override {
+		assert(used >= handle);
+		
+		used = handle;
+	}	
 };
-
-template <typename T>
-inline
-double* allocate(T& allocator, int count) {
-	return allocator.alloc(count);
-}
-
-template <typename T>
-inline
-int alloc_push(T& allocator) {
-	return allocator.used;
-}
-
-template <typename T>
-inline
-void alloc_pop(T& allocator, int push_index) {
-	allocator.used = push_index;
-}
 }
 
 #endif

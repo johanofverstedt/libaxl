@@ -3,6 +3,7 @@
 #define LIBAXL_UTIL_GUARD
 
 #include <cassert>
+#include <cstring>
 
 namespace libaxl {
 template <typename T>
