@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <cstdint>
 
 #define LIBAXL_ERROR(msg) if(msg) assert(false, (msg)); else assert(false)
 

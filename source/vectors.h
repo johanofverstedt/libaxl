@@ -9,11 +9,10 @@ namespace libaxl {
 
 struct vector {
 	double* array;
-	int start;
-	int end;
-	int stride;
-	int width;
 	vector_allocator* allocator;
+	int32_t count;
+	int32_t stride;
+	int32_t width;
 
 	inline
 	vector operator+(vector in);
@@ -45,11 +44,7 @@ void check(vector v) {
 
 inline
 int length(vector v) {
-	check(v);
-
-	auto result = (v.end - v.start) / v.stride;
-
-	return result;
+	return v.count;
 }
 
 inline
@@ -76,12 +71,11 @@ inline
 vector reverse(vector v) {
 	vector result;
 
-	result.array = v.array;
-	result.start = v.end - v.stride;
-	result.end = v.start - v.stride;
+	result.array = v.array + (v.count - 1) * v.stride;
+	result.allocator = v.allocator;
+	result.count = v.count;
 	result.stride = -v.stride;
 	result.width = v.width;
-	result.allocator = v.allocator;
 
 	return result;
 }
@@ -92,16 +86,14 @@ vector take_at_most(vector v, int count) {
 
 	assert(count >= 0);
 
-	int len = length(v);
-	if(count > len)
-		count = len;
+	if(count > v.count)
+		count = v.count;
 
 	result.array = v.array;
-	result.start = v.start;
-	result.end = v.start + v.stride * count;
+	result.allocator = v.allocator;
+	result.count = count;
 	result.stride = v.stride;
 	result.width = v.width;
-	result.allocator = v.allocator;
 
 	return result;
 }
@@ -114,11 +106,10 @@ vector take(vector v, int count) {
 	assert(count <= length(v));
 
 	result.array = v.array;
-	result.start = v.start;
-	result.end = v.start + v.stride * count;
+	result.allocator = v.allocator;
+	result.count = count;
 	result.stride = v.stride;
 	result.width = v.width;
-	result.allocator = v.allocator;
 
 	return result;
 }
@@ -129,16 +120,14 @@ vector drop_at_most(vector v, int count) {
 
 	assert(count >= 0);
 
-	int len = length(v);
-	if(count > len)
-		count = len;
+	if(count > v.count)
+		count = v.count;
 
-	result.array = v.array;
-	result.start = v.start + v.stride * count;
-	result.end = v.end;
+	result.array = v.array + count * v.stride;
+	result.allocator = v.allocator;
+	result.count = v.count - count;
 	result.stride = v.stride;
 	result.width = v.width;
-	result.allocator = v.allocator;
 
 	return result;
 }
@@ -150,9 +139,8 @@ vector drop(vector v, int count) {
 	assert(count >= 0);
 	assert(count <= length(v));
 
-	result.array = v.array;
-	result.start = v.start + v.stride * count;
-	result.end = v.end;
+	result.array = v.array + count * v.stride;
+	result.count = v.count - count;
 	result.stride = v.stride;
 	result.width = v.width;
 	result.allocator = v.allocator;
@@ -167,19 +155,11 @@ vector drop_even(vector v) {
 	//[1, 2, 3, 4] -> [2, 4]
 	//[1, 2, 3, 4, 5] -> [2, 4]
 
-	auto len = length(v);
-
-	result.array = v.array;
-	result.start = v.start + v.stride;
-
-	if (len % 2 == 0)
-		result.end = v.end + v.stride;
-	else
-		result.end = v.end;
-
+	result.array = v.array + v.stride;
+	result.allocator = v.allocator;
+	result.count = v.count / 2;
 	result.stride = 2 * v.stride;
 	result.width = v.width;
-	result.allocator = v.allocator;
 
 	return result;
 }
@@ -191,19 +171,11 @@ vector drop_odd(vector v) {
 	//[1, 2, 3, 4] -> [1, 3]
 	//[1, 2, 3, 4, 5] -> [1, 3, 5]
 
-	auto len = length(v);
-
 	result.array = v.array;
-	result.start = v.start;
-
-	if (len % 2 == 1)
-		result.end = v.end + v.stride;
-	else
-		result.end = v.end;
-
+	result.allocator = v.allocator;
+	result.count = (v.count + 1) / 2;
 	result.stride = 2 * v.stride;
 	result.width = v.width;
-	result.allocator = v.allocator;
 
 	return result;
 }
@@ -223,11 +195,10 @@ vector make_uninitialized_vector(vector_allocator *allocator, int count, int wid
 	auto len = count * width;
 
 	result.array = allocator->alloc(len);
-	result.start = 0;
-	result.end = len;
+	result.allocator = allocator;
+	result.count = count;
 	result.stride = width;
 	result.width = width;
-	result.allocator = allocator;
 
 	return result;
 }
@@ -245,7 +216,8 @@ inline
 vector ones(vector_allocator* allocator, int count, int width = 1) {
 	vector result = make_uninitialized_vector(allocator, count, width);
 	
-	for(int i = 0; i < result.end; ++i)
+	int loop_count = count * width;
+	for(int i = 0; i < loop_count; ++i)
 		result.array[i] = 1.0;
 
 	return result;	
@@ -307,11 +279,10 @@ vector wrap_vector(vector_allocator* allocator, double* array, int count, int wi
 	auto len = count * width;
 
 	result.array = array;
-	result.start = 0;
-	result.end = len;
+	result.allocator = allocator;
+	result.count = count;
 	result.stride = width;
 	result.width = width;
-	result.allocator = allocator;
 
 	return result;
 }
@@ -328,11 +299,10 @@ vector make_vector(vector_allocator* allocator, double* array, int count, int wi
 	auto len = count * width;
 
 	result.array = allocator->alloc(len);
-	result.start = 0;
-	result.end = len;
+	result.allocator = allocator;
+	result.count = count;
 	result.stride = width;
 	result.width = width;
-	result.allocator = allocator;
 
 	for(int j = 0; j < count; ++j) {
 		for(int i = 0; i < width; ++i) {
@@ -355,11 +325,10 @@ vector make_vector(vector_allocator* allocator, double** array, int count, int w
 	auto len = count * width;
 
 	result.array = allocator->alloc(len);
-	result.start = 0;
-	result.end = len;
+	result.allocator = allocator;
+	result.count = count;
 	result.stride = width;
 	result.width = width;
-	result.allocator = allocator;
 
 	for(int j = 0; j < count; ++j) {
 		for(int i = 0; i < width; ++i) {
@@ -376,7 +345,8 @@ vector make_vector(vector_allocator* allocator, double** array, int count, int w
 
 inline
 void fill(vector v, double value) {
-	for(int i = v.start; i != v.end; i += v.stride) {
+	int test_count = v.count * v.stride;
+	for(int i = 0; i < test_count; i += v.stride) {
 		v.array[i] = value;
 	}
 }
@@ -390,20 +360,20 @@ inline
 double get(vector v, int index) {
 	assert(index >= 0 && index < length(v));
 
-	return v.array[v.start + index * v.stride];
+	return v.array[index * v.stride];
 }
 inline
 double get(vector v, int index, int sub_index) {
 	assert(index >= 0 && index < length(v));
 	assert(sub_index >= 0 && sub_index < v.width);
 
-	return v.array[v.start + index * v.stride + sub_index];
+	return v.array[index * v.stride + sub_index];
 }
 inline
 void set(vector v, int index, double value) {
 	assert(index >= 0 && index < length(v));
 
-	v.array[v.start + index * v.stride] = value;
+	v.array[index * v.stride] = value;
 }
 
 inline
@@ -411,14 +381,14 @@ void set(vector v, int index, int sub_index, double value) {
 	assert(index >= 0 && index < length(v));
 	assert(sub_index >= 0 && sub_index < v.width);
 
-	v.array[v.start + index * v.stride + sub_index] = value;
+	v.array[index * v.stride + sub_index] = value;
 }
 
 inline
 double to_scalar(vector v) {
 	assert(length(v) > 0);
 
-	return v.array[v.start];
+	return *v.array;
 }
 
 inline
@@ -426,7 +396,7 @@ double to_scalar(vector v, int index) {
 	assert(length(v) > 0);
 	assert(index >= 0 && index < v.width);
 
-	return v.array[v.start + index];
+	return v.array[index];
 }
 
 inline
@@ -439,21 +409,34 @@ vector copy(vector in) {
 	auto size = len * in.width;
 
 	result.array = in.allocator->alloc(size);
-	result.start = 0;
-	result.end = size;
+	result.allocator = in.allocator;
+	result.count = len;
 	result.stride = in.width;
 	result.width = in.width;
-	result.allocator = in.allocator;
 
 	if(result.width == 1) {
+		int loop_stride = in.stride;
+		int in_index = 0;
+		int result_test_index = len * result.width;
+
 		for(int i = 0; i < len; ++i) {
-			result.array[i] = in.array[in.start + i * in.stride];
+			result.array[i] = in.array[in_index];
+
+			in_index += loop_stride;
 		}
 	} else {
-		for(int i = 0; i < len; ++i) {
+		int loop_stride = in.stride;
+		int in_major_index = 0;
+		int result_major_index = 0;
+		int result_test_index = len * result.width;
+
+		while(result_major_index < result_test_index) {
 			for(int j = 0; j < result.width; ++j) {
-				result.array[i * result.width + j] = in.array[in.start + i * in.stride + j];
+				result.array[result_major_index + j] = in.array[in_major_index + j];
 			}
+
+			in_major_index += loop_stride;
+			result_major_index += result.width;
 		}
 	}
 
@@ -466,20 +449,22 @@ vector copy_to(vector in, vector out) {
 	assert(in.width == out.width);
 
 	auto len = minimum(length(in), length(out));
+	out.count = len;
 
 	if(out.width == 1) {
 		for(int i = 0; i < len; ++i) {
-			out.array[out.start + i * out.stride] = in.array[in.start + i * in.stride];
+			out.array[i * out.stride] = in.array[i * in.stride];
 		}
 	} else {
 		for(int i = 0; i < len; ++i) {
+			int out_major_index = i * out.stride;
+			int in_major_index = i * in.stride;
 			for(int j = 0; j < out.width; ++j) {
-				out.array[out.start + i * out.stride + j] = in.array[in.start + i * in.stride + j];
+				out.array[out_major_index + j] = in.array[in_major_index + j];
 			}
 		}
 	}
 
-	out.end = out.start + len * out.stride;
 	return out;
 }
 
@@ -499,11 +484,10 @@ vector apply_op(vector a, vector b, BinaryOp op) {
 
 	if(a_len == 0 || b_len == 0) {
 		result.array = a.array;
-		result.start = 0;
-		result.end = 0;
+		result.allocator = a.allocator;
+		result.count = 0;
 		result.stride = 1;
 		result.width = a.width;
-		result.allocator = a.allocator;
 
 		return result;
 	}
@@ -528,7 +512,7 @@ vector apply_op(vector a, vector b, BinaryOp op) {
 	for(int i = 0; i < out_len; ++i) {
 		for(int j = 0; j < result.width; ++j) {
 			result.array[i * result.width + j] =
-			  op(a.array[a.start + i * a.stride + j], b.array[b.start + i * b.stride + j]);
+			  op(a.array[i * a.stride + j], b.array[i * b.stride + j]);
 		}
 	}
 

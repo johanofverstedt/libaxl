@@ -10,26 +10,26 @@ void print_vector(libaxl::vector v, bool newline) {
 
 	if (v.width == 1) {
 		if (len > 0)
-			std::cout << v.array[v.start];
+			std::cout << v.array[0];
 
 		for (int i = 1; i < len; ++i) {
-			std::cout << ", " << v.array[v.start + v.stride * i];
+			std::cout << ", " << v.array[v.stride * i];
 		}
 	}
 	else {
 		if (len > 0) {
 			std::cout << "(";
-			std::cout << v.array[v.start];
+			std::cout << v.array[0];
 			for (int j = 1; j < v.width; ++j)
-				std::cout << ", " << v.array[v.start + j];
+				std::cout << ", " << v.array[j];
 			std::cout << ")";
 		}
 		for (int i = 1; i < len; ++i) {
 			std::cout << ", (";
-			std::cout << v.array[v.start + i * v.stride];
+			std::cout << v.array[i * v.stride];
 
 			for (int j = 1; j < v.width; ++j) {
-				std::cout << ", " << v.array[v.start + i * v.stride + j];
+				std::cout << ", " << v.array[i * v.stride + j];
 			}
 			std::cout << ")";
 		}

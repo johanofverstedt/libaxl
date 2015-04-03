@@ -69,11 +69,11 @@ int width(vector_pair vp) {
 
 inline
 vector_pair reverse(vector_pair vp) {
-	vector tmp = reverse(vp.v[0]);
-	vp.v[0] = reverse(vp.v[1]);
-	vp.v[1] = tmp;
+	vector_pair result = make_vector_pair(
+		reverse(second(vp)),
+		reverse(first(vp)));
 
-	return vp;
+	return result;
 }
 
 inline
