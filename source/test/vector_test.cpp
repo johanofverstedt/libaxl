@@ -1,7 +1,7 @@
 
 #include "../vectors.h"
 #include "../circular_buffer.h"
-#include "../stack_allocator.h"
+#include "../stack_arena.h"
 #include <iostream>
 
 void print_vector(libaxl::vector v, bool newline) {
@@ -43,38 +43,38 @@ void print_vector(libaxl::vector v, bool newline) {
 int main(int argc, char** argv) {
 	using namespace libaxl;
 
-	libaxl::stack_vector_allocator<1024> allocator;
-	//libaxl::dynamic_stack_vector_allocator allocator(1024);
+	libaxl::stack_vector_arena<1024> arena;
+	//libaxl::dynamic_stack_vector_arena arena(1024);
 
-	vector v = ramp(&allocator, 5, 1);
+	vector v = ramp(&arena, 5, 1);
 	std::cout << length(v) << std::endl;
 
 	print_vector(reverse(v), true);
 
-	std::cout << "Used: " << allocator.used() << std::endl;
-	vector vres = make_uninitialized_vector(&allocator, 5, 2);
-	std::cout << "Used: " << allocator.used() << std::endl;
+	std::cout << "Used: " << arena.used() << std::endl;
+	vector vres = make_uninitialized_vector(&arena, 5, 2);
+	std::cout << "Used: " << arena.used() << std::endl;
 	{
-		alloc_scope s{ &allocator };
-		vector v2 = ramp(&allocator, 5, 2);
+		alloc_scope s{ &arena };
+		vector v2 = ramp(&arena, 5, 2);
 		vector v2_mod = drop(reverse(v2), 1);
 		print_vector(v2_mod, true);
 
 		std::cout << length(drop(reverse(v2), 3)) << std::endl;
-		std::cout << "Used: " << allocator.used() << std::endl;
+		std::cout << "Used: " << arena.used() << std::endl;
 
 		vres = copy_to(v2_mod, vres);
 	}
-	std::cout << "Used: " << allocator.used() << std::endl;
+	std::cout << "Used: " << arena.used() << std::endl;
 	set(vres, 1, 1, 3.14);
 	print_vector(vres, true);
 	
 	print_vector(mean(vres), true);
 	std::cout << "Mean(0): " << to_scalar(mean(vres)) << std::endl;
 	std::cout << "Mean(1): " << to_scalar(mean(vres), 1) << std::endl;
-	std::cout << "Used: " << allocator.used() << std::endl;
+	std::cout << "Used: " << arena.used() << std::endl;
 
-	print_vector(vres + ones(&allocator, length(vres), vres.width), true);
+	print_vector(vres + ones(&arena, length(vres), vres.width), true);
 	print_vector(vres * vres - vres, true);
 	print_vector(vres * vres + vres, true);
 
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
 	std::cout << "drop_odd: ";
 	print_vector(drop_odd(vres), true);
 
-	vector iota_vec = iota(&allocator, 6);
+	vector iota_vec = iota(&arena, 6);
 	print_vector(drop_even(iota_vec), true);
 	print_vector(drop_odd(iota_vec), true);
 	print_vector(drop_even(take(iota_vec, 5)), true);
@@ -164,7 +164,7 @@ int main(int argc, char** argv) {
 	}
 	std::cout << std::endl;
 
-	std::cout << "Used: " << allocator.used() << std::endl;
+	std::cout << "Used: " << arena.used() << std::endl;
 	int in;
 	std::cin >> in;
 

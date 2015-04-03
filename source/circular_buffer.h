@@ -3,7 +3,7 @@
 #define LIBAXL_CIRCULAR_BUFFER_GUARD
 
 #include "util.h"
-#include "vector_allocator.h"
+#include "vector_arena.h"
 #include "vectors.h"
 #include "vector_pair.h"
 
@@ -15,10 +15,10 @@ struct circular_buffer {
 };
 
 inline
-circular_buffer make_circular_buffer(vector_allocator* allocator, int count, int width) {
+circular_buffer make_circular_buffer(vector_arena* arena, int count, int width) {
 	circular_buffer result;
 
-	result.buf_vector = zeros(allocator, count, width);
+	result.buf_vector = zeros(arena, count, width);
 	result.tail = 0;
 
 	return result;

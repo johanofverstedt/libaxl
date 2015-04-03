@@ -1,20 +1,20 @@
 
-#ifndef LIBAXL_VECTOR_ALLOCATOR_GUARD
-#define LIBAXL_VECTOR_ALLOCATOR_GUARD
+#ifndef LIBAXL_VECTOR_arena_GUARD
+#define LIBAXL_VECTOR_arena_GUARD
 
 #include "util.h"
 
 namespace libaxl {
 	
-struct vector_allocator {
-	virtual ~vector_allocator() = default;
+struct vector_arena {
+	virtual ~vector_arena() = default;
 
 	virtual double* alloc(int count) = 0;
 	
 	virtual void reset() = 0;
 
 	//
-	//  Methods for stack allocators
+	//  Methods for stack arenas
 	//
 	virtual int push() = 0;
 	virtual void pop(int handle) = 0;
@@ -25,16 +25,16 @@ struct vector_allocator {
 
 struct alloc_scope {
 private:
-	vector_allocator* allocator;
+	vector_arena* arena;
 	int handle;
 public:
-	explicit alloc_scope(vector_allocator* allocator) : allocator(allocator) {
-		assert(allocator != nullptr);
-		handle = allocator->push();
+	explicit alloc_scope(vector_arena* arena) : arena(arena) {
+		assert(arena != nullptr);
+		handle = arena->push();
 	}
 	~alloc_scope() {
-		assert(allocator != nullptr);
-		allocator->pop(handle);
+		assert(arena != nullptr);
+		arena->pop(handle);
 	}
 
 	//Make non-copyable/non-movable

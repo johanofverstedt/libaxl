@@ -3,13 +3,13 @@
 #define LIBAXL_VECTORS_GUARD
 
 #include "util.h"
-#include "vector_allocator.h"
+#include "vector_arena.h"
 
 namespace libaxl {
 
 struct vector {
 	double* array;
-	vector_allocator* allocator;
+	vector_arena* arena;
 	int32_t count;
 	int32_t stride;
 	int32_t width;
@@ -37,9 +37,9 @@ void check(vector v) {
 	assert(v.array != nullptr);
 	assert(v.stride >= 1 || v.stride <= -1);
 	assert(v.width >= 1);
-	assert(v.allocator != nullptr);
+	assert(v.arena != nullptr);
 	/*bool result = (v.array != nullptr) && (v.stride >= 1 || v.stride <= -1) &&
-	(v.width >= 1) && (v.allocator != nullptr);*/
+	(v.width >= 1) && (v.arena != nullptr);*/
 }
 
 inline
@@ -72,7 +72,7 @@ vector reverse(vector v) {
 	vector result;
 
 	result.array = v.array + (v.count - 1) * v.stride;
-	result.allocator = v.allocator;
+	result.arena = v.arena;
 	result.count = v.count;
 	result.stride = -v.stride;
 	result.width = v.width;
@@ -90,7 +90,7 @@ vector take_at_most(vector v, int count) {
 		count = v.count;
 
 	result.array = v.array;
-	result.allocator = v.allocator;
+	result.arena = v.arena;
 	result.count = count;
 	result.stride = v.stride;
 	result.width = v.width;
@@ -106,7 +106,7 @@ vector take(vector v, int count) {
 	assert(count <= length(v));
 
 	result.array = v.array;
-	result.allocator = v.allocator;
+	result.arena = v.arena;
 	result.count = count;
 	result.stride = v.stride;
 	result.width = v.width;
@@ -124,7 +124,7 @@ vector drop_at_most(vector v, int count) {
 		count = v.count;
 
 	result.array = v.array + count * v.stride;
-	result.allocator = v.allocator;
+	result.arena = v.arena;
 	result.count = v.count - count;
 	result.stride = v.stride;
 	result.width = v.width;
@@ -143,7 +143,7 @@ vector drop(vector v, int count) {
 	result.count = v.count - count;
 	result.stride = v.stride;
 	result.width = v.width;
-	result.allocator = v.allocator;
+	result.arena = v.arena;
 
 	return result;
 }
@@ -156,7 +156,7 @@ vector drop_even(vector v) {
 	//[1, 2, 3, 4, 5] -> [2, 4]
 
 	result.array = v.array + v.stride;
-	result.allocator = v.allocator;
+	result.arena = v.arena;
 	result.count = v.count / 2;
 	result.stride = 2 * v.stride;
 	result.width = v.width;
@@ -172,7 +172,7 @@ vector drop_odd(vector v) {
 	//[1, 2, 3, 4, 5] -> [1, 3, 5]
 
 	result.array = v.array;
-	result.allocator = v.allocator;
+	result.arena = v.arena;
 	result.count = (v.count + 1) / 2;
 	result.stride = 2 * v.stride;
 	result.width = v.width;
@@ -185,17 +185,17 @@ vector drop_odd(vector v) {
 //
 
 inline
-vector make_uninitialized_vector(vector_allocator *allocator, int count, int width = 1) {
+vector make_uninitialized_vector(vector_arena *arena, int count, int width = 1) {
 	vector result;
 
-	assert(allocator);
+	assert(arena);
 	assert(count >= 0);
 	assert(width >= 1);
 
 	auto len = count * width;
 
-	result.array = allocator->alloc(len);
-	result.allocator = allocator;
+	result.array = arena->alloc(len);
+	result.arena = arena;
 	result.count = count;
 	result.stride = width;
 	result.width = width;
@@ -204,8 +204,8 @@ vector make_uninitialized_vector(vector_allocator *allocator, int count, int wid
 }
 
 inline
-vector zeros(vector_allocator *allocator, int count, int width = 1) {
-	vector result = make_uninitialized_vector(allocator, count, width);
+vector zeros(vector_arena *arena, int count, int width = 1) {
+	vector result = make_uninitialized_vector(arena, count, width);
 	
 	memset(result.array, 0, count * width * sizeof(double));
 
@@ -213,8 +213,8 @@ vector zeros(vector_allocator *allocator, int count, int width = 1) {
 }
 
 inline
-vector ones(vector_allocator* allocator, int count, int width = 1) {
-	vector result = make_uninitialized_vector(allocator, count, width);
+vector ones(vector_arena* arena, int count, int width = 1) {
+	vector result = make_uninitialized_vector(arena, count, width);
 	
 	int loop_count = count * width;
 	for(int i = 0; i < loop_count; ++i)
@@ -224,8 +224,8 @@ vector ones(vector_allocator* allocator, int count, int width = 1) {
 }
 
 inline
-vector delta(vector_allocator* allocator, int count, int width = 1) {
-	vector result = zeros(allocator, count, width);
+vector delta(vector_arena* arena, int count, int width = 1) {
+	vector result = zeros(arena, count, width);
 	
 	assert(count > 0);
 
@@ -237,8 +237,8 @@ vector delta(vector_allocator* allocator, int count, int width = 1) {
 }
 
 inline
-vector ramp(vector_allocator* allocator, int count, int width = 1) {
-	vector result = make_uninitialized_vector(allocator, count, width);
+vector ramp(vector_arena* arena, int count, int width = 1) {
+	vector result = make_uninitialized_vector(arena, count, width);
 	
 	assert(count > 1);
 
@@ -253,8 +253,8 @@ vector ramp(vector_allocator* allocator, int count, int width = 1) {
 }
 
 inline
-vector iota(vector_allocator* allocator, int count, int width = 1) {
-	vector result = make_uninitialized_vector(allocator, count, width);
+vector iota(vector_arena* arena, int count, int width = 1) {
+	vector result = make_uninitialized_vector(arena, count, width);
 	
 	assert(count > 1);
 
@@ -268,10 +268,10 @@ vector iota(vector_allocator* allocator, int count, int width = 1) {
 }
 
 inline
-vector wrap_vector(vector_allocator* allocator, double* array, int count, int width = 1) {
+vector wrap_vector(vector_arena* arena, double* array, int count, int width = 1) {
 	vector result;
 
-	assert(allocator);
+	assert(arena);
 	assert(array);
 	assert(count >= 0);
 	assert(width >= 1);
@@ -279,7 +279,7 @@ vector wrap_vector(vector_allocator* allocator, double* array, int count, int wi
 	auto len = count * width;
 
 	result.array = array;
-	result.allocator = allocator;
+	result.arena = arena;
 	result.count = count;
 	result.stride = width;
 	result.width = width;
@@ -288,18 +288,18 @@ vector wrap_vector(vector_allocator* allocator, double* array, int count, int wi
 }
 
 inline
-vector make_vector(vector_allocator* allocator, double* array, int count, int width = 1) {
+vector make_vector(vector_arena* arena, double* array, int count, int width = 1) {
 	vector result;
 
-	assert(allocator);
+	assert(arena);
 	assert(array);
 	assert(count >= 0);
 	assert(width >= 1);
 
 	auto len = count * width;
 
-	result.array = allocator->alloc(len);
-	result.allocator = allocator;
+	result.array = arena->alloc(len);
+	result.arena = arena;
 	result.count = count;
 	result.stride = width;
 	result.width = width;
@@ -314,18 +314,18 @@ vector make_vector(vector_allocator* allocator, double* array, int count, int wi
 }
 
 inline
-vector make_vector(vector_allocator* allocator, double** array, int count, int width = 1) {
+vector make_vector(vector_arena* arena, double** array, int count, int width = 1) {
 	vector result;
 
-	assert(allocator);
+	assert(arena);
 	assert(array);
 	assert(count >= 0);
 	assert(width >= 1);
 
 	auto len = count * width;
 
-	result.array = allocator->alloc(len);
-	result.allocator = allocator;
+	result.array = arena->alloc(len);
+	result.arena = arena;
 	result.count = count;
 	result.stride = width;
 	result.width = width;
@@ -408,8 +408,8 @@ vector copy(vector in) {
 	auto len = length(in);
 	auto size = len * in.width;
 
-	result.array = in.allocator->alloc(size);
-	result.allocator = in.allocator;
+	result.array = in.arena->alloc(size);
+	result.arena = in.arena;
 	result.count = len;
 	result.stride = in.width;
 	result.width = in.width;
@@ -484,7 +484,7 @@ vector apply_op(vector a, vector b, BinaryOp op) {
 
 	if(a_len == 0 || b_len == 0) {
 		result.array = a.array;
-		result.allocator = a.allocator;
+		result.arena = a.arena;
 		result.count = 0;
 		result.stride = 1;
 		result.width = a.width;
@@ -499,7 +499,7 @@ vector apply_op(vector a, vector b, BinaryOp op) {
 	if(a_len == 1 || b_len == 1) {
 		//Todo: fix it
 		assert(false);
-		result = zeros(a.allocator, length(a), a.width);
+		result = zeros(a.arena, length(a), a.width);
 		return result;
 	}
 
@@ -507,7 +507,7 @@ vector apply_op(vector a, vector b, BinaryOp op) {
 
 	int out_len = minimum(a_len, b_len);
 
-	result = make_uninitialized_vector(a.allocator, out_len, a.width);
+	result = make_uninitialized_vector(a.arena, out_len, a.width);
 
 	for(int i = 0; i < out_len; ++i) {
 		for(int j = 0; j < result.width; ++j) {
@@ -587,7 +587,7 @@ vector vector::operator*=(vector in) {
 
 inline
 vector mean(vector v) {
-	vector result = zeros(v.allocator, 1, v.width);
+	vector result = zeros(v.arena, 1, v.width);
 
 	auto len = length(v);
 	auto flen = (double)len;
