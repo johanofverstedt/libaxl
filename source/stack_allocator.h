@@ -20,7 +20,7 @@ struct stack_vector_allocator : vector_allocator {
 	//Prevent copy assignment
 	stack_vector_allocator& operator=(const stack_vector_allocator&) = delete;
 	//Prevent move assignment
-	stack_vector_allocator& stack_vector_allocator(stack_vector_allocator&&) = delete;
+	stack_vector_allocator& operator=(stack_vector_allocator&&) = delete;
 
 	virtual double* alloc(int count) override {
 		assert(count >= 0);
@@ -61,7 +61,7 @@ struct dynamic_stack_vector_allocator : vector_allocator {
 		memory_ = new double[size];
 	}
 	~dynamic_stack_vector_allocator() {
-		if(memory)
+		if(memory_)
 			delete[] memory_;
 	}
 	//Prevent copy construction
@@ -75,9 +75,9 @@ struct dynamic_stack_vector_allocator : vector_allocator {
 	}
 
 	//Prevent copy assignment
-	dynamic_stack_vector_allocator& operator=(const stack_vector_allocator&) = delete;
+	dynamic_stack_vector_allocator& operator=(const dynamic_stack_vector_allocator&) = delete;
 	//Allow move assignment
-	dynamic_stack_vector_allocator& dynamic_stack_vector_allocator(dynamic_stack_vector_allocator&& that) {
+	dynamic_stack_vector_allocator& operator=(dynamic_stack_vector_allocator&& that) {
 		used_ = that.used_;
 		size_ = that.size_;
 		memory_ = that.memory_;
