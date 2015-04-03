@@ -35,8 +35,13 @@ struct vector {
 
 inline
 bool check(vector v) {
-	bool result = (v.array != nullptr) && (stride >= 1) &&
-	(width >= 1) && (allocator != nullptr);
+	bool result = true;
+	assert(v.array != nullptr);
+	assert(v.stride >= 1 || v.stride <= -1);
+	assert(v.width >= 1);
+	assert(v.allocator != nullptr);
+	/*bool result = (v.array != nullptr) && (v.stride >= 1 || v.stride <= -1) &&
+	(v.width >= 1) && (v.allocator != nullptr);*/
 
 	return result;
 }
@@ -73,6 +78,8 @@ vector reverse(vector v) {
 	result.start = v.end - v.stride;
 	result.end = v.start - v.stride;
 	result.stride = -v.stride;
+	result.width = v.width;
+	result.allocator = v.allocator;
 
 	return result;
 }
@@ -88,6 +95,8 @@ vector take(vector v, int count) {
 	result.start = v.start;
 	result.end = v.start + v.stride * count;
 	result.stride = v.stride;
+	result.width = v.width;
+	result.allocator = v.allocator;
 
 	return result;
 }
@@ -103,6 +112,8 @@ vector drop(vector v, int count) {
 	result.start = v.start + v.stride * count;
 	result.end = v.end;
 	result.stride = v.stride;
+	result.width = v.width;
+	result.allocator = v.allocator;
 
 	return result;
 }
@@ -135,7 +146,7 @@ inline
 vector zeros(vector_allocator *allocator, int count, int width = 1) {
 	vector result = make_uninitialized_vector(allocator, count, width);
 	
-	memset(result.array, 0, len * sizeof(double));
+	memset(result.array, 0, count * width * sizeof(double));
 
 	return result;
 }
@@ -174,10 +185,10 @@ vector ramp(vector_allocator* allocator, int count, int width = 1) {
 	
 	assert(count > 1);
 
-	double denominator = 1.0 / (result.end - 1);
-	for(int i = 0; i < result.end; ++i) {
+	double denominator = 1.0 / ((count - 1));
+	for(int i = 0; i < count; ++i) {
 		for(int j = 0; j < width; ++j) {
-			result.array[i * width + j] = i / denominator;
+			result.array[i * width + j] = i * denominator;
 		}
 	}
 
@@ -225,7 +236,7 @@ vector make_vector(vector_allocator* allocator, double* array, int count, int wi
 
 	for(int j = 0; j < count; ++j) {
 		for(int i = 0; i < width; ++i) {
-			result.array[j * width + i] = array[i][j];
+			result.array[j * width + i] = array[i * width + j];
 		}
 	}
 
@@ -276,6 +287,49 @@ void zero(vector v) {
 }
 
 inline
+double get(vector v, int index) {
+	assert(index >= 0 && index < length(v));
+
+	return v.array[v.start + index * v.stride];
+}
+inline
+double get(vector v, int index, int sub_index) {
+	assert(index >= 0 && index < length(v));
+	assert(sub_index >= 0 && sub_index < v.width);
+
+	return v.array[v.start + index * v.stride + sub_index];
+}
+inline
+void set(vector v, int index, double value) {
+	assert(index >= 0 && index < length(v));
+
+	v.array[v.start + index * v.stride] = value;
+}
+
+inline
+void set(vector v, int index, int sub_index, double value) {
+	assert(index >= 0 && index < length(v));
+	assert(sub_index >= 0 && sub_index < v.width);
+
+	v.array[v.start + index * v.stride + sub_index] = value;
+}
+
+inline
+double to_scalar(vector v) {
+	assert(length(v) > 0);
+
+	return v.array[v.start];
+}
+
+inline
+double to_scalar(vector v, int index) {
+	assert(length(v) > 0);
+	assert(index >= 0 && index < v.width);
+
+	return v.array[v.start + index];
+}
+
+inline
 vector copy(vector in) {
 	vector result;
 
@@ -304,6 +358,29 @@ vector copy(vector in) {
 	}
 
 	return result;
+}
+
+inline
+vector copy_to(vector in, vector out) {
+	assert(check(in));
+	assert(in.width == out.width);
+
+	auto len = minimum(length(in), length(out));
+
+	if(out.width == 1) {
+		for(int i = 0; i < len; ++i) {
+			out.array[out.start + i * out.stride] = in.array[in.start + i * in.stride];
+		}
+	} else {
+		for(int i = 0; i < len; ++i) {
+			for(int j = 0; j < out.width; ++j) {
+				out.array[out.start + i * out.stride + j] = in.array[in.start + i * in.stride + j];
+			}
+		}
+	}
+
+	out.end = out.start + len * out.stride;
+	return out;
 }
 
 template <typename BinaryOp>
@@ -344,7 +421,7 @@ vector apply_op(vector a, vector b, BinaryOp op) {
 	for(int i = 0; i < out_len; ++i) {
 		for(int j = 0; j < result.width; ++j) {
 			result.array[i * result.width + j] =
-			  op(a.array[start + i * a.stride + j], b.array[start + i * b.stride + j]);
+			  op(a.array[a.start + i * a.stride + j], b.array[b.start + i * b.stride + j]);
 		}
 	}
 
@@ -412,6 +489,30 @@ vector vector::operator*=(vector in) {
 	(*this) = (*this) * in;
 	return *this;
 }
+
+//
+//  Mathematical operations
+//
+
+inline
+vector mean(vector v) {
+	vector result = zeros(v.allocator, 1, v.width);
+
+	auto len = length(v);
+	auto flen = (double)len;
+
+	for(int i = 0; i < len; ++i) {
+		for(int j = 0; j < v.width; ++j) {
+			result.array[j] += v.array[i * v.width + j];
+		}
+	}
+
+	for(int j = 0; j < v.width; ++j)
+		result.array[j] /= flen;
+
+	return result;
+}
+
 }
 
 #endif

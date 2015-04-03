@@ -5,66 +5,74 @@
 #include "util.h"
 
 namespace libaxl {
-template <int size>
+template <int SIZE>
 struct stack_vector_allocator : vector_allocator {
-	int used;
-	double memory[size];
+	int used_;
+	double memory_[SIZE];
+
+	stack_vector_allocator() : used_(0) {}
 
 	virtual double* alloc(int count) override {
 		assert(count >= 0);
-		assert(used + count <= size);
+		assert(used_ + count <= SIZE);
 
-		double* result = memory + used;
-		used += count;
+		double* result = memory_ + used_;
+		used_ += count;
 
 		return result;
 	}
 
 	virtual int push() override {
-		return used;
+		return used_;
 	}
 
 	virtual void pop(int handle) override {
-		assert(used >= handle);
+		assert(used_ >= handle);
 		
-		used = handle;
+		used_ = handle;
 	}
+
+	virtual int used() override { return used_; }
+	virtual int remaining() override { return SIZE - used_; }
 };
 
 struct dynamic_stack_vector_allocator : vector_allocator {
-	int used;
-	int size;
-	double *memory;
+	int used_;
+	int size_;
+	double *memory_;
 
-	explicit dynamic_stack_vector_allocator(int size, bool resizable) : used(0), size(size) {
+	explicit dynamic_stack_vector_allocator(int size) : used_(0), size_(size) {
 		assert(size > 0);
 
-		memory = new double[size];
+		memory_ = new double[size];
 	}
 
 	~dynamic_stack_vector_allocator() {
-		delete[] memory;
+		delete[] memory_;
 	}
 
 	virtual double* alloc(int count) override {
 		assert(count >= 0);
-		assert(used + count <= size);
+		assert(used_ + count <= size_);
 
-		double* result = memory + used;
-		used += count;
+		double* result = memory_ + used_;
+		used_ += count;
 
 		return result;
 	}
 
 	virtual int push() override {
-		return used;
+		return used_;
 	}
 
 	virtual void pop(int handle) override {
-		assert(used >= handle);
+		assert(used_ >= handle);
 
-		used = handle;
+		used_ = handle;
 	}	
+
+	virtual int used() override { return used_; }
+	virtual int remaining() override { return size_ - used_; }
 };
 }
 
