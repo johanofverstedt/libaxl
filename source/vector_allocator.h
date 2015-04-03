@@ -5,6 +5,7 @@
 #include "util.h"
 
 namespace libaxl {
+	
 struct vector_allocator {
 	virtual ~vector_allocator() = default;
 
@@ -28,13 +29,15 @@ private:
 	int handle;
 public:
 	explicit alloc_scope(vector_allocator* allocator) : allocator(allocator) {
+		assert(allocator != nullptr);
 		handle = allocator->push();
 	}
 	~alloc_scope() {
+		assert(allocator != nullptr);
 		allocator->pop(handle);
 	}
 
-	//Make non-copyable
+	//Make non-copyable/non-movable
 
 	alloc_scope(const alloc_scope&) = delete;
 	alloc_scope(alloc_scope&&) = delete;
