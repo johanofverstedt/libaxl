@@ -87,6 +87,26 @@ vector reverse(vector v) {
 }
 
 inline
+vector take_at_most(vector v, int count) {
+	vector result;
+
+	assert(count >= 0);
+
+	int len = length(v);
+	if(count > len)
+		count = len;
+
+	result.array = v.array;
+	result.start = v.start;
+	result.end = v.start + v.stride * count;
+	result.stride = v.stride;
+	result.width = v.width;
+	result.allocator = v.allocator;
+
+	return result;
+}
+
+inline
 vector take(vector v, int count) {
 	vector result;
 
@@ -96,6 +116,26 @@ vector take(vector v, int count) {
 	result.array = v.array;
 	result.start = v.start;
 	result.end = v.start + v.stride * count;
+	result.stride = v.stride;
+	result.width = v.width;
+	result.allocator = v.allocator;
+
+	return result;
+}
+
+inline
+vector drop_at_most(vector v, int count) {
+	vector result;
+
+	assert(count >= 0);
+
+	int len = length(v);
+	if(count > len)
+		count = len;
+
+	result.array = v.array;
+	result.start = v.start + v.stride * count;
+	result.end = v.end;
 	result.stride = v.stride;
 	result.width = v.width;
 	result.allocator = v.allocator;
@@ -580,6 +620,7 @@ vector mean(vector v) {
 	return result;
 }
 
-}
+} // namespace libaxl 
 
+// LIBAXL_VECTORS_GUARD
 #endif

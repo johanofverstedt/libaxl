@@ -1,5 +1,6 @@
 
 #include "../vectors.h"
+#include "../circular_buffer.h"
 #include "../stack_allocator.h"
 #include <iostream>
 
@@ -92,6 +93,76 @@ int main(int argc, char** argv) {
 	print_vector(drop_odd(take(iota_vec, 5)), true);
 	print_vector(drop_even(drop(iota_vec, 1)), true);
 	print_vector(drop_odd(drop(iota_vec, 1)), true);
+
+	std::cout << std::endl << "... Circular Buffers ..." << std::endl << std::endl;
+
+	circular_buffer cb = make_circular_buffer(iota_vec, 0);
+
+	for (int i = 1; i <= 6; ++i) {
+		std::cout << "read(cb, " << i << "): ";
+		print_vector(first(read(cb, i)), false);
+		std::cout << ", ";
+		print_vector(second(read(cb, i)), true);
+	}
+	std::cout << std::endl;
+	for (int i = 1; i <= 6; ++i) {
+		std::cout << "write(cb, " << i << "): ";
+		print_vector(first(write(cb, i)), false);
+		std::cout << ", ";
+		print_vector(second(write(cb, i)), true);
+	}
+	std::cout << std::endl;
+
+	cb = rotate_left(cb, 2);
+
+	for (int i = 1; i <= 6; ++i) {
+		std::cout << "read(cb, " << i << "): ";
+		print_vector(first(read(cb, i)), false);
+		std::cout << ", ";
+		print_vector(second(read(cb, i)), true);
+	}
+	std::cout << std::endl;
+	for (int i = 1; i <= 6; ++i) {
+		std::cout << "write(cb, " << i << "): ";
+		print_vector(first(write(cb, i)), false);
+		std::cout << ", ";
+		print_vector(second(write(cb, i)), true);
+	}
+	std::cout << std::endl;
+
+	cb = rotate_left(cb, 3);
+
+	for (int i = 1; i <= 6; ++i) {
+		std::cout << "read(cb, " << i << "): ";
+		print_vector(first(read(cb, i)), false);
+		std::cout << ", ";
+		print_vector(second(read(cb, i)), true);
+	}
+	std::cout << std::endl;
+	for (int i = 1; i <= 6; ++i) {
+		std::cout << "write(cb, " << i << "): ";
+		print_vector(first(write(cb, i)), false);
+		std::cout << ", ";
+		print_vector(second(write(cb, i)), true);
+	}
+	std::cout << std::endl;
+
+	cb = rotate_left(cb, 2);
+
+	for (int i = 1; i <= 6; ++i) {
+		std::cout << "read(cb, " << i << "): ";
+		print_vector(first(read(cb, i)), false);
+		std::cout << ", ";
+		print_vector(second(read(cb, i)), true);
+	}
+	std::cout << std::endl;
+	for (int i = 1; i <= 6; ++i) {
+		std::cout << "write(cb, " << i << "): ";
+		print_vector(first(write(cb, i)), false);
+		std::cout << ", ";
+		print_vector(second(write(cb, i)), true);
+	}
+	std::cout << std::endl;
 
 	std::cout << "Used: " << allocator.used() << std::endl;
 	int in;
