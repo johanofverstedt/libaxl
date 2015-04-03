@@ -73,6 +73,27 @@ int main(int argc, char** argv) {
 	std::cout << "Mean(1): " << to_scalar(mean(vres), 1) << std::endl;
 	std::cout << "Used: " << allocator.used() << std::endl;
 
+	print_vector(vres + ones(&allocator, length(vres), vres.width), true);
+	print_vector(vres * vres - vres, true);
+	print_vector(vres * vres + vres, true);
+
+	std::cout << "Drop even/odd:" << std::endl;
+	std::cout << "original: ";
+	print_vector(vres, true);
+	std::cout << "drop_even: ";
+	print_vector(drop_even(vres), true);
+	std::cout << "drop_odd: ";
+	print_vector(drop_odd(vres), true);
+
+	vector iota_vec = iota(&allocator, 6);
+	print_vector(drop_even(iota_vec), true);
+	print_vector(drop_odd(iota_vec), true);
+	print_vector(drop_even(take(iota_vec, 5)), true);
+	print_vector(drop_odd(take(iota_vec, 5)), true);
+	print_vector(drop_even(drop(iota_vec, 1)), true);
+	print_vector(drop_odd(drop(iota_vec, 1)), true);
+
+	std::cout << "Used: " << allocator.used() << std::endl;
 	int in;
 	std::cin >> in;
 

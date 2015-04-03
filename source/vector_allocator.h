@@ -7,9 +7,11 @@
 namespace libaxl {
 struct vector_allocator {
 	virtual ~vector_allocator() = default;
-	
+
 	virtual double* alloc(int count) = 0;
 	
+	virtual void reset() = 0;
+
 	//
 	//  Methods for stack allocators
 	//

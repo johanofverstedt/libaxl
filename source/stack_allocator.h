@@ -22,6 +22,10 @@ struct stack_vector_allocator : vector_allocator {
 		return result;
 	}
 
+	virtual void reset() override {
+		used_ = 0;
+	}
+
 	virtual int push() override {
 		return used_;
 	}
@@ -59,6 +63,10 @@ struct dynamic_stack_vector_allocator : vector_allocator {
 		used_ += count;
 
 		return result;
+	}
+
+	virtual void reset() override {
+		used_ = 0;
 	}
 
 	virtual int push() override {

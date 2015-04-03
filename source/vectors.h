@@ -34,25 +34,27 @@ struct vector {
 //
 
 inline
-bool check(vector v) {
-	bool result = true;
+void check(vector v) {
 	assert(v.array != nullptr);
 	assert(v.stride >= 1 || v.stride <= -1);
 	assert(v.width >= 1);
 	assert(v.allocator != nullptr);
 	/*bool result = (v.array != nullptr) && (v.stride >= 1 || v.stride <= -1) &&
 	(v.width >= 1) && (v.allocator != nullptr);*/
+}
+
+inline
+int length(vector v) {
+	check(v);
+
+	auto result = (v.end - v.start) / v.stride;
 
 	return result;
 }
 
 inline
-int length(vector v) {
-	assert(check(v));
-
-	auto result = (v.end - v.start) / v.stride;
-
-	return result;
+int width(vector v) {
+	return v.width;
 }
 
 inline
@@ -118,6 +120,54 @@ vector drop(vector v, int count) {
 	return result;
 }
 
+inline
+vector drop_even(vector v) {
+	vector result;
+
+	//[1, 2, 3, 4] -> [2, 4]
+	//[1, 2, 3, 4, 5] -> [2, 4]
+
+	auto len = length(v);
+
+	result.array = v.array;
+	result.start = v.start + v.stride;
+
+	if (len % 2 == 0)
+		result.end = v.end + v.stride;
+	else
+		result.end = v.end;
+
+	result.stride = 2 * v.stride;
+	result.width = v.width;
+	result.allocator = v.allocator;
+
+	return result;
+}
+
+inline
+vector drop_odd(vector v) {
+	vector result;
+
+	//[1, 2, 3, 4] -> [1, 3]
+	//[1, 2, 3, 4, 5] -> [1, 3, 5]
+
+	auto len = length(v);
+
+	result.array = v.array;
+	result.start = v.start;
+
+	if (len % 2 == 1)
+		result.end = v.end + v.stride;
+	else
+		result.end = v.end;
+
+	result.stride = 2 * v.stride;
+	result.width = v.width;
+	result.allocator = v.allocator;
+
+	return result;
+}
+
 //
 //  vector factory functions
 //
@@ -163,17 +213,12 @@ vector ones(vector_allocator* allocator, int count, int width = 1) {
 
 inline
 vector delta(vector_allocator* allocator, int count, int width = 1) {
-	vector result = make_uninitialized_vector(allocator, count, width);
+	vector result = zeros(allocator, count, width);
 	
 	assert(count > 0);
 
 	for(int j = 0; j < width; ++j) {
 		result.array[j] = 1.0;
-	}
-	for(int i = 1; i < result.end; ++i) {
-		for(int j = 0; j < width; ++j) {
-			result.array[i * width + j] = 0.0;
-		}
 	}
 
 	return result;	
@@ -193,6 +238,21 @@ vector ramp(vector_allocator* allocator, int count, int width = 1) {
 	}
 
 	return result;
+}
+
+inline
+vector iota(vector_allocator* allocator, int count, int width = 1) {
+	vector result = make_uninitialized_vector(allocator, count, width);
+	
+	assert(count > 1);
+
+	for(int i = 0; i < count; ++i) {
+		for(int j = 0; j < width; ++j) {
+			result.array[i * width + j] = i;
+		}
+	}
+
+	return result;	
 }
 
 inline
@@ -333,7 +393,7 @@ inline
 vector copy(vector in) {
 	vector result;
 
-	assert(check(in));
+	check(in);
 
 	auto len = length(in);
 	auto size = len * in.width;
@@ -362,7 +422,7 @@ vector copy(vector in) {
 
 inline
 vector copy_to(vector in, vector out) {
-	assert(check(in));
+	check(in);
 	assert(in.width == out.width);
 
 	auto len = minimum(length(in), length(out));
@@ -388,6 +448,12 @@ inline
 vector apply_op(vector a, vector b, BinaryOp op) {
 	vector result;
 
+	//Always put the thinner vector first
+	if(a.width > b.width) {
+		result = apply_op(b, a, op);
+		return result;
+	}
+
 	int a_len = length(a);
 	int b_len = length(b);
 
@@ -409,6 +475,7 @@ vector apply_op(vector a, vector b, BinaryOp op) {
 	if(a_len == 1 || b_len == 1) {
 		//Todo: fix it
 		assert(false);
+		result = zeros(a.allocator, length(a), a.width);
 		return result;
 	}
 
