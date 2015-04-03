@@ -77,14 +77,41 @@ vector_pair reverse(vector_pair vp) {
 }
 
 inline
-vector_pair take(vector_pair vp, int count) {
+vector_pair take_at_most(vector_pair vp, int count) {
+	vector_pair result;
 
-	return vp;
+	result.v[0] = take_at_most(first(vp), count);
+	result.v[1] = take_at_most(second(vp), count - length(result.v[0]));
+
+	return result;
+}
+
+inline
+vector_pair take(vector_pair vp, int count) {
+	vector_pair result = take_at_most(vp, count);
+
+	assert(length(first(result)) + length(second(result)) == count);
+
+	return result;
+}
+
+inline
+vector_pair drop_at_most(vector_pair vp, int count) {
+	vector_pair result;
+
+	result.v[0] = drop_at_most(first(vp), count);
+	result.v[1] = drop_at_most(second(vp), count - (length(first(vp)) - length(first(result))));
+
+	return result;
 }
 
 inline
 vector_pair drop(vector_pair vp, int count) {
-	return vp;
+	vector_pair result = drop_at_most(vp, count);
+
+	assert(length(vp) - length(result) == count);
+
+	return result;
 }
 
 } //namespace libaxl

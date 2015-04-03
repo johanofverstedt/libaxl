@@ -62,8 +62,6 @@ inline
 circular_buffer rotate_left(circular_buffer c, int count) {
 	int size = length(c);
 
-
-
 	int new_tail = c.tail + count;
 	if(new_tail >= size)
 		new_tail -= size;
@@ -121,7 +119,8 @@ vector_pair read(circular_buffer c, int count, int offset) {
 	vector_pair result;
 
 	int size = length(c);
-	assert(count <= size);
+	assert(offset >= 0);
+	assert(count + offset <= size);
 
 	int read_tail = c.tail - (count + offset);
 	if(read_tail < 0)
