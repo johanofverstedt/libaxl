@@ -28,7 +28,7 @@ public:
 	virtual unsigned char* alloc(size_type count, size_type alignment) override {
 		assert(alignment >= 1);
 
-		size_type alignment_error = detail::ptr_alignment_error(memory_ + used_, alignment);
+		size_type alignment_error = detail::ptr_alignment_offset(memory_ + used_, alignment);
 		size_type adjusted_used = used_ + alignment_error;
 		size_type new_used = adjusted_used + count;
 
@@ -101,7 +101,7 @@ public:
 	virtual unsigned char* alloc(size_type count, size_type alignment) override {
 		assert(alignment >= 1);
 
-		size_type alignment_error = detail::ptr_alignment_error(memory_ + used_, alignment);
+		size_type alignment_error = detail::ptr_alignment_offset(memory_ + used_, alignment);
 		size_type adjusted_used = used_ + alignment_error;
 		size_type new_used = adjusted_used + count;
 

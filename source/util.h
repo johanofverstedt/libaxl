@@ -62,7 +62,7 @@ namespace detail {
 		}
 	}
 	inline
-	size_type ptr_alignment_error(unsigned char* ptr, size_type alignment) {
+	size_type ptr_alignment_offset(unsigned char* ptr, size_type alignment) {
 		size_type result = (alignment - ((size_type)(ptr) % alignment)) % alignment;
 		return result;
 	}	
