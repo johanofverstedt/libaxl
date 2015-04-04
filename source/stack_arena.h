@@ -8,7 +8,7 @@
 namespace libaxl {
 
 template <int SIZE>
-struct fixed_stack_arena : public stack_arena {
+class fixed_stack_arena : public stack_arena {
 private:
 	size_type used_;
 	unsigned char memory_[SIZE];
