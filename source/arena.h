@@ -21,7 +21,10 @@ struct stack_arena : arena {
 	virtual void pop(size_type handle) = 0;
 
 	virtual size_type used() = 0;
-	virtual size_type remaining() = 0;
+	virtual size_type capacity() = 0;
+	virtual size_type remaining() {
+		return capacity() - used();
+	}
 };
 
 template <typename T>

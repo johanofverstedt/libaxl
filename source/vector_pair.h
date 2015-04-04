@@ -29,7 +29,7 @@ vector second(vector_pair vp) {
 }
 
 inline
-vector pair_indexed(vector_pair vp, int index) {
+vector pair_indexed(vector_pair vp, index_type index) {
 	assert(index == 0 || index == 1);
 
 	return vp.v[index];
@@ -56,12 +56,12 @@ void swap(vector_pair& a, vector_pair& b) {
 }
 
 inline
-int length(vector_pair vp) {
+index_type length(vector_pair vp) {
 	return length(vp.v[0]) + length(vp.v[1]);
 }
 
 inline
-int width(vector_pair vp) {
+index_type width(vector_pair vp) {
 	assert(vp.v[0].width == vp.v[1].width);
 
 	return vp.v[0].width;
@@ -77,7 +77,7 @@ vector_pair reverse(vector_pair vp) {
 }
 
 inline
-vector_pair take_at_most(vector_pair vp, int count) {
+vector_pair take_at_most(vector_pair vp, index_type count) {
 	vector_pair result;
 
 	result.v[0] = take_at_most(first(vp), count);
@@ -87,7 +87,7 @@ vector_pair take_at_most(vector_pair vp, int count) {
 }
 
 inline
-vector_pair take(vector_pair vp, int count) {
+vector_pair take(vector_pair vp, index_type count) {
 	vector_pair result = take_at_most(vp, count);
 
 	assert(length(first(result)) + length(second(result)) == count);
@@ -96,7 +96,7 @@ vector_pair take(vector_pair vp, int count) {
 }
 
 inline
-vector_pair drop_at_most(vector_pair vp, int count) {
+vector_pair drop_at_most(vector_pair vp, index_type count) {
 	vector_pair result;
 
 	result.v[0] = drop_at_most(first(vp), count);
@@ -106,7 +106,7 @@ vector_pair drop_at_most(vector_pair vp, int count) {
 }
 
 inline
-vector_pair drop(vector_pair vp, int count) {
+vector_pair drop(vector_pair vp, index_type count) {
 	vector_pair result = drop_at_most(vp, count);
 
 	assert(length(vp) - length(result) == count);

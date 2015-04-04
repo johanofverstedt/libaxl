@@ -10,9 +10,9 @@ namespace libaxl {
 struct vector {
 	double* array;
 	arena* arena;
-	int32_t count;
-	int32_t stride;
-	int32_t width;
+	index_type count;
+	index_type stride;
+	index_type width;
 
 	inline
 	vector operator+(vector in);
@@ -43,12 +43,12 @@ void check(vector v) {
 }
 
 inline
-int length(vector v) {
+index_type length(vector v) {
 	return v.count;
 }
 
 inline
-int width(vector v) {
+index_type width(vector v) {
 	return v.width;
 }
 
@@ -81,7 +81,7 @@ vector reverse(vector v) {
 }
 
 inline
-vector take_at_most(vector v, int count) {
+vector take_at_most(vector v, index_type count) {
 	vector result;
 
 	assert(count >= 0);
@@ -99,7 +99,7 @@ vector take_at_most(vector v, int count) {
 }
 
 inline
-vector take(vector v, int count) {
+vector take(vector v, index_type count) {
 	vector result;
 
 	assert(count >= 0);
@@ -115,7 +115,7 @@ vector take(vector v, int count) {
 }
 
 inline
-vector drop_at_most(vector v, int count) {
+vector drop_at_most(vector v, index_type count) {
 	vector result;
 
 	assert(count >= 0);
@@ -133,7 +133,7 @@ vector drop_at_most(vector v, int count) {
 }
 
 inline
-vector drop(vector v, int count) {
+vector drop(vector v, index_type count) {
 	vector result;
 
 	assert(count >= 0);
@@ -185,7 +185,7 @@ vector drop_odd(vector v) {
 //
 
 inline
-vector make_uninitialized_vector(arena *arena, int count, int width = 1) {
+vector make_uninitialized_vector(arena *arena, index_type count, index_type width = 1) {
 	vector result;
 
 	assert(arena);
@@ -204,7 +204,7 @@ vector make_uninitialized_vector(arena *arena, int count, int width = 1) {
 }
 
 inline
-vector zeros(arena *arena, int count, int width = 1) {
+vector zeros(arena *arena, index_type count, index_type width = 1) {
 	vector result = make_uninitialized_vector(arena, count, width);
 	
 	memset(result.array, 0, count * width * sizeof(double));
@@ -213,23 +213,23 @@ vector zeros(arena *arena, int count, int width = 1) {
 }
 
 inline
-vector ones(arena* arena, int count, int width = 1) {
+vector ones(arena* arena, index_type count, index_type width = 1) {
 	vector result = make_uninitialized_vector(arena, count, width);
 	
-	int loop_count = count * width;
-	for(int i = 0; i < loop_count; ++i)
+	index_type loop_count = count * width;
+	for(index_type i = 0; i < loop_count; ++i)
 		result.array[i] = 1.0;
 
 	return result;	
 }
 
 inline
-vector delta(arena* arena, int count, int width = 1) {
+vector delta(arena* arena, index_type count, index_type width = 1) {
 	vector result = zeros(arena, count, width);
 	
 	assert(count > 0);
 
-	for(int j = 0; j < width; ++j) {
+	for(index_type j = 0; j < width; ++j) {
 		result.array[j] = 1.0;
 	}
 
@@ -237,14 +237,14 @@ vector delta(arena* arena, int count, int width = 1) {
 }
 
 inline
-vector ramp(arena* arena, int count, int width = 1) {
+vector ramp(arena* arena, index_type count, index_type width = 1) {
 	vector result = make_uninitialized_vector(arena, count, width);
 	
 	assert(count > 1);
 
 	double denominator = 1.0 / ((count - 1));
-	for(int i = 0; i < count; ++i) {
-		for(int j = 0; j < width; ++j) {
+	for(index_type i = 0; i < count; ++i) {
+		for(index_type j = 0; j < width; ++j) {
 			result.array[i * width + j] = i * denominator;
 		}
 	}
@@ -253,13 +253,13 @@ vector ramp(arena* arena, int count, int width = 1) {
 }
 
 inline
-vector iota(arena* arena, int count, int width = 1) {
+vector iota(arena* arena, index_type count, index_type width = 1) {
 	vector result = make_uninitialized_vector(arena, count, width);
 	
 	assert(count > 1);
 
-	for(int i = 0; i < count; ++i) {
-		for(int j = 0; j < width; ++j) {
+	for(index_type i = 0; i < count; ++i) {
+		for(index_type j = 0; j < width; ++j) {
 			result.array[i * width + j] = i;
 		}
 	}
@@ -268,7 +268,7 @@ vector iota(arena* arena, int count, int width = 1) {
 }
 
 inline
-vector wrap_vector(arena* arena, double* array, int count, int width = 1) {
+vector wrap_vector(arena* arena, double* array, index_type count, index_type width = 1) {
 	vector result;
 
 	assert(arena);
@@ -288,7 +288,7 @@ vector wrap_vector(arena* arena, double* array, int count, int width = 1) {
 }
 
 inline
-vector make_vector(arena* arena, double* array, int count, int width = 1) {
+vector make_vector(arena* arena, double* array, index_type count, index_type width = 1) {
 	vector result;
 
 	assert(arena);
@@ -304,8 +304,8 @@ vector make_vector(arena* arena, double* array, int count, int width = 1) {
 	result.stride = width;
 	result.width = width;
 
-	for(int j = 0; j < count; ++j) {
-		for(int i = 0; i < width; ++i) {
+	for(index_type j = 0; j < count; ++j) {
+		for(index_type i = 0; i < width; ++i) {
 			result.array[j * width + i] = array[i * width + j];
 		}
 	}
@@ -314,7 +314,7 @@ vector make_vector(arena* arena, double* array, int count, int width = 1) {
 }
 
 inline
-vector make_vector(arena* arena, double** array, int count, int width = 1) {
+vector make_vector(arena* arena, double** array, index_type count, index_type width = 1) {
 	vector result;
 
 	assert(arena);
@@ -330,9 +330,9 @@ vector make_vector(arena* arena, double** array, int count, int width = 1) {
 	result.stride = width;
 	result.width = width;
 
-	for(int j = 0; j < count; ++j) {
+	for(index_type j = 0; j < count; ++j) {
 		auto result_major_index = j * width;
-		for(int i = 0; i < width; ++i) {
+		for(index_type i = 0; i < width; ++i) {
 			result.array[result_major_index + i] = array[i][j];
 		}
 	}
@@ -346,8 +346,8 @@ vector make_vector(arena* arena, double** array, int count, int width = 1) {
 
 inline
 void fill(vector v, double value) {
-	int test_count = v.count * v.stride;
-	for(int i = 0; i < test_count; i += v.stride) {
+	index_type test_count = v.count * v.stride;
+	for(index_type i = 0; i < test_count; i += v.stride) {
 		v.array[i] = value;
 	}
 }
@@ -358,27 +358,27 @@ void zero(vector v) {
 }
 
 inline
-double get(vector v, int index) {
+double get(vector v, index_type index) {
 	assert(index >= 0 && index < length(v));
 
 	return v.array[index * v.stride];
 }
 inline
-double get(vector v, int index, int sub_index) {
+double get(vector v, index_type index, index_type sub_index) {
 	assert(index >= 0 && index < length(v));
 	assert(sub_index >= 0 && sub_index < v.width);
 
 	return v.array[index * v.stride + sub_index];
 }
 inline
-void set(vector v, int index, double value) {
+void set(vector v, index_type index, double value) {
 	assert(index >= 0 && index < length(v));
 
 	v.array[index * v.stride] = value;
 }
 
 inline
-void set(vector v, int index, int sub_index, double value) {
+void set(vector v, index_type index, index_type sub_index, double value) {
 	assert(index >= 0 && index < length(v));
 	assert(sub_index >= 0 && sub_index < v.width);
 
@@ -393,7 +393,7 @@ double to_scalar(vector v) {
 }
 
 inline
-double to_scalar(vector v, int index) {
+double to_scalar(vector v, index_type index) {
 	assert(length(v) > 0);
 	assert(index >= 0 && index < v.width);
 
@@ -416,23 +416,23 @@ vector copy(vector in) {
 	result.width = in.width;
 
 	if(result.width == 1) {
-		int loop_stride = in.stride;
-		int in_index = 0;
-		int result_test_index = len * result.width;
+		index_type loop_stride = in.stride;
+		index_type in_index = 0;
+		index_type result_test_index = len * result.width;
 
-		for(int i = 0; i < len; ++i) {
+		for(index_type i = 0; i < len; ++i) {
 			result.array[i] = in.array[in_index];
 
 			in_index += loop_stride;
 		}
 	} else {
-		int loop_stride = in.stride;
-		int in_major_index = 0;
-		int result_major_index = 0;
-		int result_test_index = len * result.width;
+		index_type loop_stride = in.stride;
+		index_type in_major_index = 0;
+		index_type result_major_index = 0;
+		index_type result_test_index = len * result.width;
 
 		while(result_major_index < result_test_index) {
-			for(int j = 0; j < result.width; ++j) {
+			for(index_type j = 0; j < result.width; ++j) {
 				result.array[result_major_index + j] = in.array[in_major_index + j];
 			}
 
@@ -453,14 +453,14 @@ vector copy_to(vector in, vector out) {
 	out.count = len;
 
 	if(out.width == 1) {
-		for(int i = 0; i < len; ++i) {
+		for(index_type i = 0; i < len; ++i) {
 			out.array[i * out.stride] = in.array[i * in.stride];
 		}
 	} else {
-		for(int i = 0; i < len; ++i) {
-			int out_major_index = i * out.stride;
-			int in_major_index = i * in.stride;
-			for(int j = 0; j < out.width; ++j) {
+		for(index_type i = 0; i < len; ++i) {
+			index_type out_major_index = i * out.stride;
+			index_type in_major_index = i * in.stride;
+			for(index_type j = 0; j < out.width; ++j) {
 				out.array[out_major_index + j] = in.array[in_major_index + j];
 			}
 		}
@@ -480,8 +480,8 @@ vector apply_op(vector a, vector b, BinaryOp op) {
 		return result;
 	}
 
-	int a_len = length(a);
-	int b_len = length(b);
+	index_type a_len = length(a);
+	index_type b_len = length(b);
 
 	if(a_len == 0 || b_len == 0) {
 		result.array = a.array;
@@ -506,12 +506,12 @@ vector apply_op(vector a, vector b, BinaryOp op) {
 
 	assert(a.width == b.width);
 
-	int out_len = minimum(a_len, b_len);
+	index_type out_len = minimum(a_len, b_len);
 
 	result = make_uninitialized_vector(a.arena, out_len, a.width);
 
-	for(int i = 0; i < out_len; ++i) {
-		for(int j = 0; j < result.width; ++j) {
+	for(index_type i = 0; i < out_len; ++i) {
+		for(index_type j = 0; j < result.width; ++j) {
 			result.array[i * result.width + j] =
 			  op(a.array[i * a.stride + j], b.array[i * b.stride + j]);
 		}
@@ -593,13 +593,13 @@ vector mean(vector v) {
 	auto len = length(v);
 	auto flen = (double)len;
 
-	for(int i = 0; i < len; ++i) {
-		for(int j = 0; j < v.width; ++j) {
+	for(index_type i = 0; i < len; ++i) {
+		for(index_type j = 0; j < v.width; ++j) {
 			result.array[j] += v.array[i * v.width + j];
 		}
 	}
 
-	for(int j = 0; j < v.width; ++j)
+	for(index_type j = 0; j < v.width; ++j)
 		result.array[j] /= flen;
 
 	return result;

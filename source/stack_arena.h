@@ -8,10 +8,11 @@
 namespace libaxl {
 
 template <int SIZE>
-struct fixed_stack_arena : stack_arena {
+struct fixed_stack_arena : public stack_arena {
+private:
 	size_type used_;
 	unsigned char memory_[SIZE];
-
+public:
 	fixed_stack_arena() : used_(0) {}
 	~fixed_stack_arena() = default;
 	//Prevent copy construction
@@ -54,14 +55,15 @@ struct fixed_stack_arena : stack_arena {
 	}
 
 	virtual size_type used() override { return used_; }
-	virtual size_type remaining() override { return SIZE - used_; }
+	virtual size_type capacity() override { return SIZE; }
 };
 
-struct dynamic_stack_arena : stack_arena {
+class dynamic_stack_arena : public stack_arena {
+private:	
 	size_type used_;
 	size_type size_;
 	unsigned char *memory_;
-
+public:
 	explicit dynamic_stack_arena(size_type size) : used_(0U), size_(size) {
 		assert(size > 0);
 
@@ -126,7 +128,7 @@ struct dynamic_stack_arena : stack_arena {
 	}
 
 	virtual size_type used() override { return used_; }
-	virtual size_type remaining() override { return size_ - used_; }
+	virtual size_type capacity() override { return size_; }
 };
 }
 
