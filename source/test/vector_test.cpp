@@ -43,8 +43,8 @@ void print_vector(libaxl::vector v, bool newline) {
 int main(int argc, char** argv) {
 	using namespace libaxl;
 
-	libaxl::stack_vector_arena<1024> arena;
-	//libaxl::dynamic_stack_vector_arena arena(1024);
+	libaxl::fixed_stack_arena<1024> arena;
+	//libaxl::dynamic_stack_arena arena(1024);
 
 	vector v = ramp(&arena, 5, 1);
 	std::cout << length(v) << std::endl;
@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 	vector vres = make_uninitialized_vector(&arena, 5, 2);
 	std::cout << "Used: " << arena.used() << std::endl;
 	{
-		alloc_scope s{ &arena };
+		stack_arena_scope s{ &arena };
 		vector v2 = ramp(&arena, 5, 2);
 		vector v2_mod = drop(reverse(v2), 1);
 		print_vector(v2_mod, true);

@@ -3,13 +3,13 @@
 #define LIBAXL_VECTORS_GUARD
 
 #include "util.h"
-#include "vector_arena.h"
+#include "arena.h"
 
 namespace libaxl {
 
 struct vector {
 	double* array;
-	vector_arena* arena;
+	arena* arena;
 	int32_t count;
 	int32_t stride;
 	int32_t width;
@@ -185,7 +185,7 @@ vector drop_odd(vector v) {
 //
 
 inline
-vector make_uninitialized_vector(vector_arena *arena, int count, int width = 1) {
+vector make_uninitialized_vector(arena *arena, int count, int width = 1) {
 	vector result;
 
 	assert(arena);
@@ -194,7 +194,7 @@ vector make_uninitialized_vector(vector_arena *arena, int count, int width = 1) 
 
 	auto len = count * width;
 
-	result.array = arena->alloc(len);
+	result.array = allocate<double>(arena, len);//arena->alloc(len);
 	result.arena = arena;
 	result.count = count;
 	result.stride = width;
@@ -204,7 +204,7 @@ vector make_uninitialized_vector(vector_arena *arena, int count, int width = 1) 
 }
 
 inline
-vector zeros(vector_arena *arena, int count, int width = 1) {
+vector zeros(arena *arena, int count, int width = 1) {
 	vector result = make_uninitialized_vector(arena, count, width);
 	
 	memset(result.array, 0, count * width * sizeof(double));
@@ -213,7 +213,7 @@ vector zeros(vector_arena *arena, int count, int width = 1) {
 }
 
 inline
-vector ones(vector_arena* arena, int count, int width = 1) {
+vector ones(arena* arena, int count, int width = 1) {
 	vector result = make_uninitialized_vector(arena, count, width);
 	
 	int loop_count = count * width;
@@ -224,7 +224,7 @@ vector ones(vector_arena* arena, int count, int width = 1) {
 }
 
 inline
-vector delta(vector_arena* arena, int count, int width = 1) {
+vector delta(arena* arena, int count, int width = 1) {
 	vector result = zeros(arena, count, width);
 	
 	assert(count > 0);
@@ -237,7 +237,7 @@ vector delta(vector_arena* arena, int count, int width = 1) {
 }
 
 inline
-vector ramp(vector_arena* arena, int count, int width = 1) {
+vector ramp(arena* arena, int count, int width = 1) {
 	vector result = make_uninitialized_vector(arena, count, width);
 	
 	assert(count > 1);
@@ -253,7 +253,7 @@ vector ramp(vector_arena* arena, int count, int width = 1) {
 }
 
 inline
-vector iota(vector_arena* arena, int count, int width = 1) {
+vector iota(arena* arena, int count, int width = 1) {
 	vector result = make_uninitialized_vector(arena, count, width);
 	
 	assert(count > 1);
@@ -268,7 +268,7 @@ vector iota(vector_arena* arena, int count, int width = 1) {
 }
 
 inline
-vector wrap_vector(vector_arena* arena, double* array, int count, int width = 1) {
+vector wrap_vector(arena* arena, double* array, int count, int width = 1) {
 	vector result;
 
 	assert(arena);
@@ -288,7 +288,7 @@ vector wrap_vector(vector_arena* arena, double* array, int count, int width = 1)
 }
 
 inline
-vector make_vector(vector_arena* arena, double* array, int count, int width = 1) {
+vector make_vector(arena* arena, double* array, int count, int width = 1) {
 	vector result;
 
 	assert(arena);
@@ -298,7 +298,7 @@ vector make_vector(vector_arena* arena, double* array, int count, int width = 1)
 
 	auto len = count * width;
 
-	result.array = arena->alloc(len);
+	result.array = allocate<double>(arena, len);//arena->alloc(len);
 	result.arena = arena;
 	result.count = count;
 	result.stride = width;
@@ -314,7 +314,7 @@ vector make_vector(vector_arena* arena, double* array, int count, int width = 1)
 }
 
 inline
-vector make_vector(vector_arena* arena, double** array, int count, int width = 1) {
+vector make_vector(arena* arena, double** array, int count, int width = 1) {
 	vector result;
 
 	assert(arena);
@@ -322,17 +322,18 @@ vector make_vector(vector_arena* arena, double** array, int count, int width = 1
 	assert(count >= 0);
 	assert(width >= 1);
 
-	auto len = count * width;
+	auto size = count * width;
 
-	result.array = arena->alloc(len);
+	result.array = allocate<double>(arena, size);//arena->alloc(size);
 	result.arena = arena;
 	result.count = count;
 	result.stride = width;
 	result.width = width;
 
 	for(int j = 0; j < count; ++j) {
+		auto result_major_index = j * width;
 		for(int i = 0; i < width; ++i) {
-			result.array[j * width + i] = array[i][j];
+			result.array[result_major_index + i] = array[i][j];
 		}
 	}
 
@@ -408,7 +409,7 @@ vector copy(vector in) {
 	auto len = length(in);
 	auto size = len * in.width;
 
-	result.array = in.arena->alloc(size);
+	result.array = allocate<double>(in.arena, size);//in.arena->alloc(size);
 	result.arena = in.arena;
 	result.count = len;
 	result.stride = in.width;

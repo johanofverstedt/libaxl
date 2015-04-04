@@ -3,71 +3,78 @@
 #define LIBAXL_STACK_ARENA_GUARD
 
 #include "util.h"
+#include "arena.h"
 
 namespace libaxl {
-template <int SIZE>
-struct stack_vector_arena : vector_arena {
-	int used_;
-	double memory_[SIZE];
 
-	stack_vector_arena() : used_(0) {}
-	~stack_vector_arena() = default;
+template <int SIZE>
+struct fixed_stack_arena : stack_arena {
+	size_type used_;
+	unsigned char memory_[SIZE];
+
+	fixed_stack_arena() : used_(0) {}
+	~fixed_stack_arena() = default;
 	//Prevent copy construction
-	stack_vector_arena(const stack_vector_arena&) = delete;
+	fixed_stack_arena(const fixed_stack_arena&) = delete;
 	//Prevent move construction
-	stack_vector_arena(stack_vector_arena&& that) = delete;
+	fixed_stack_arena(fixed_stack_arena&& that) = delete;
 
 	//Prevent copy assignment
-	stack_vector_arena& operator=(const stack_vector_arena&) = delete;
+	fixed_stack_arena& operator=(const fixed_stack_arena&) = delete;
 	//Prevent move assignment
-	stack_vector_arena& operator=(stack_vector_arena&&) = delete;
+	fixed_stack_arena& operator=(fixed_stack_arena&&) = delete;
 
-	virtual double* alloc(int count) override {
-		assert(count >= 0);
-		assert(used_ + count <= SIZE);
+	virtual unsigned char* alloc(size_type count, size_type alignment) override {
+		assert(alignment >= 1);
 
-		double* result = memory_ + used_;
-		used_ += count;
+		size_type alignment_error = detail::ptr_alignment_error(memory_ + used_, alignment);
+		size_type adjusted_used = used_ + alignment_error;
+		size_type new_used = adjusted_used + count;
+
+		assert(new_used <= SIZE);
+
+		unsigned char* result = memory_ + adjusted_used;
+		used_ = new_used;
 
 		return result;
 	}
 
 	virtual void reset() override {
-		used_ = 0;
+		used_ = 0U;
 	}
 
-	virtual int push() override {
+	virtual size_type push() override {
 		return used_;
 	}
 
-	virtual void pop(int handle) override {
+	virtual void pop(size_type handle) override {
 		assert(used_ >= handle);
 		
 		used_ = handle;
 	}
 
-	virtual int used() override { return used_; }
-	virtual int remaining() override { return SIZE - used_; }
+	virtual size_type used() override { return used_; }
+	virtual size_type remaining() override { return SIZE - used_; }
 };
 
-struct dynamic_stack_vector_arena : vector_arena {
-	int used_;
-	int size_;
-	double *memory_;
+struct dynamic_stack_arena : stack_arena {
+	size_type used_;
+	size_type size_;
+	unsigned char *memory_;
 
-	explicit dynamic_stack_vector_arena(int size) : used_(0), size_(size) {
+	explicit dynamic_stack_arena(size_type size) : used_(0U), size_(size) {
 		assert(size > 0);
 
-		memory_ = new double[size];
+		memory_ = new unsigned char[size];
 	}
-	~dynamic_stack_vector_arena() {
+	~dynamic_stack_arena() {
 		if(memory_)
 			delete[] memory_;
 	}
 	//Prevent copy construction
-	dynamic_stack_vector_arena(const dynamic_stack_vector_arena&) = delete;
+	dynamic_stack_arena(const dynamic_stack_arena&) = delete;
 	//Allow move construction
-	dynamic_stack_vector_arena(dynamic_stack_vector_arena&& that)
+	dynamic_stack_arena(dynamic_stack_arena&& that)
 	: used_(that.used_), size_(that.size_), memory_(that.memory_) {
 		that.used_ = 0;
 		that.size_ = 0;
@@ -75,9 +82,9 @@ struct dynamic_stack_vector_arena : vector_arena {
 	}
 
 	//Prevent copy assignment
-	dynamic_stack_vector_arena& operator=(const dynamic_stack_vector_arena&) = delete;
+	dynamic_stack_arena& operator=(const dynamic_stack_arena&) = delete;
 	//Allow move assignment
-	dynamic_stack_vector_arena& operator=(dynamic_stack_vector_arena&& that) {
+	dynamic_stack_arena& operator=(dynamic_stack_arena&& that) {
 		used_ = that.used_;
 		size_ = that.size_;
 		memory_ = that.memory_;
@@ -89,12 +96,17 @@ struct dynamic_stack_vector_arena : vector_arena {
 		return *this;
 	}
 
-	virtual double* alloc(int count) override {
-		assert(count >= 0);
-		assert(used_ + count <= size_);
+	virtual unsigned char* alloc(size_type count, size_type alignment) override {
+		assert(alignment >= 1);
 
-		double* result = memory_ + used_;
-		used_ += count;
+		size_type alignment_error = detail::ptr_alignment_error(memory_ + used_, alignment);
+		size_type adjusted_used = used_ + alignment_error;
+		size_type new_used = adjusted_used + count;
+
+		assert(new_used <= size_);
+
+		unsigned char* result = memory_ + adjusted_used;
+		used_ = new_used;
 
 		return result;
 	}
@@ -103,18 +115,18 @@ struct dynamic_stack_vector_arena : vector_arena {
 		used_ = 0;
 	}
 
-	virtual int push() override {
+	virtual size_type push() override {
 		return used_;
 	}
 
-	virtual void pop(int handle) override {
+	virtual void pop(size_type handle) override {
 		assert(used_ >= handle);
 
 		used_ = handle;
-	}	
+	}
 
-	virtual int used() override { return used_; }
-	virtual int remaining() override { return size_ - used_; }
+	virtual size_type used() override { return used_; }
+	virtual size_type remaining() override { return size_ - used_; }
 };
 }
 
