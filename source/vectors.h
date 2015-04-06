@@ -167,6 +167,24 @@ vector drop_odd(vector v) {
 	return result;
 }
 
+template <typename Op>
+inline
+void for_each(vector v, Op op) {
+	if(v.width == 1) {
+		double* end = v.array + (v.count * v.stride);
+		for(double* ptr = v.array; ptr != end; ptr += v.stride) {
+			op(*ptr);
+		}
+	} else {
+		for(int major_index = 0; major_index < v.count; ++major_index) {
+			int major_index_with_stride = major_index * v.stride;
+			for(int minor_index = 0; minor_index < v.width; ++minor_index) {
+				op(v.array[major_index_with_stride + minor_index]);
+			}
+		}
+	}
+}
+
 //
 //  vector factory functions
 //
@@ -333,10 +351,13 @@ vector make_vector(arena* arena, double** array, index_type count, index_type wi
 
 inline
 void fill(vector v, double value) {
-	index_type test_count = v.count * v.stride;
+	BEGIN_VECTOR_MUTABLE_FOR_EACH(v, elem)
+		elem = value;
+	END_VECTOR_MUTABLE_FOR_EACH()
+/*	index_type test_count = v.count * v.stride;
 	for(index_type i = 0; i < test_count; i += v.stride) {
 		v.array[i] = value;
-	}
+	}*/
 }
 
 inline
@@ -592,7 +613,7 @@ vector mean(vector v) {
 	return result;
 }
 
-} // namespace libaxl 
+} // namespace libaxl
 
 // LIBAXL_VECTORS_GUARD
 #endif
