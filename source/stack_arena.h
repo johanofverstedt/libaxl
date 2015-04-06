@@ -64,7 +64,7 @@ private:
 	size_type size_;
 	unsigned char *memory_;
 public:
-	explicit dynamic_stack_arena(arena* arena, size_type size) : used_(oU), size_(size) {
+	explicit dynamic_stack_arena(arena* arena, size_type size) : used_(0U), size_(size) {
 		memory_ = allocate<unsigned char>(arena, size);
 	}
 	explicit dynamic_stack_arena(unsigned char* ptr, size_type size) : memory_(ptr), used_(0U), size_(size) {

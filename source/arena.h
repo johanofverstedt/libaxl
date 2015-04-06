@@ -35,7 +35,7 @@ T* allocate(arena* arena, index_type count) {
 
 	size_type sz = (size_type)sizeof(T);
 	auto alignment = detail::adjust_alignment(sz);
-	auto result = (T*)arena->alloc((size_type)count * sz(T), alignment);
+	auto result = (T*)arena->alloc((size_type)count * sz, alignment);
 
 	return result;
 }

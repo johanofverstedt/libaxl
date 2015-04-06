@@ -15,12 +15,6 @@ struct vector {
 	index_type width;
 
 	inline
-	vector operator+(vector in);
-	inline
-	vector operator-(vector in);
-	inline
-	vector operator*(vector in);
-	inline
 	vector operator+=(vector in);
 	inline
 	vector operator-=(vector in);
@@ -538,28 +532,28 @@ struct binary_mul_op {
 };
 
 inline
-vector vector::operator+(vector in) {
+vector operator+(vector a, vector b) {
 	vector result;
 
-	result = apply_op(*this, in, binary_add_op());
+	result = apply_op(a, b, binary_add_op());
 	
 	return result;
 }
 
 inline
-vector vector::operator-(vector in) {
+vector operator-(vector a, vector b) {
 	vector result;
 
-	result = apply_op(*this, in, binary_sub_op());
+	result = apply_op(a, b, binary_sub_op());
 
 	return result;
 }
 
 inline
-vector vector::operator*(vector in) {
+vector operator*(vector a, vector b) {
 	vector result;
 
-	result = apply_op(*this, in, binary_mul_op());
+	result = apply_op(a, b, binary_mul_op());
 	
 	return result;
 }
