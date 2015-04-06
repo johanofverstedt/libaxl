@@ -13,13 +13,6 @@ struct vector {
 	index_type count;
 	index_type stride;
 	index_type width;
-
-	inline
-	vector operator+=(vector in);
-	inline
-	vector operator-=(vector in);
-	inline
-	vector operator*=(vector in);
 };
 
 //
@@ -561,19 +554,19 @@ vector operator*(vector a, vector b) {
 //  Todo: replace with faster versions, that don't allocate new memory
 
 inline
-vector vector::operator+=(vector in) {
-	(*this) = (*this) + in;
-	return *this;
+vector operator+=(vector &a, vector b) {
+	a = a + b;
+	return a;
 }
 inline
-vector vector::operator-=(vector in) {
-	(*this) = (*this) - in;
-	return *this;
+vector operator-=(vector &a, vector b) {
+	a = a - b;
+	return a;
 }
 inline
-vector vector::operator*=(vector in) {
-	(*this) = (*this) * in;
-	return *this;
+vector operator*=(vector &a, vector b) {
+	a = a * b;
+	return a;
 }
 
 //
