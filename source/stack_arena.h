@@ -14,7 +14,7 @@ private:
 	unsigned char memory_[SIZE];
 public:
 	fixed_stack_arena() : used_(0) {}
-	~fixed_stack_arena() = default;
+	virtual ~fixed_stack_arena() = default;
 	//Prevent copy construction
 	fixed_stack_arena(const fixed_stack_arena&) = delete;
 	//Prevent move construction
@@ -64,15 +64,13 @@ private:
 	size_type size_;
 	unsigned char *memory_;
 public:
-	explicit dynamic_stack_arena(size_type size) : used_(0U), size_(size) {
-		assert(size > 0);
-
-		memory_ = new unsigned char[size];
+	explicit dynamic_stack_arena(arena* arena, size_type size) : used_(oU), size_(size) {
+		memory_ = allocate<unsigned char>(arena, size);
 	}
-	~dynamic_stack_arena() {
-		if(memory_)
-			delete[] memory_;
+	explicit dynamic_stack_arena(unsigned char* ptr, size_type size) : memory_(ptr), used_(0U), size_(size) {
+		assert(size >= 0);
 	}
+	virtual ~dynamic_stack_arena() = default;
 	//Prevent copy construction
 	dynamic_stack_arena(const dynamic_stack_arena&) = delete;
 	//Allow move construction
