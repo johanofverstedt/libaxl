@@ -6,6 +6,53 @@
 
 namespace libaxl {
 inline
+vector_f64 ones_f64(arena* arena, index_type count) {
+	vector_f64 result = make_uninitialized_vector<f64>(arena, count);
+	
+	for(index_type i = 0; i < count; ++i)
+		result.array[i] = 1.0;
+
+	return result;
+}
+
+inline
+vector_f64 delta_f64(arena* arena, index_type count) {
+	vector_f64 result = zeros<f64>(arena, count);
+	
+	assert(count > 0);
+
+	result.array[0] = 1.0;
+
+	return result;
+}
+
+inline
+vector_f64 ramp_f64(arena* arena, index_type count) {
+	auto result = make_uninitialized_vector<f64>(arena, count);
+	
+	assert(count > 1);
+
+	double denominator = 1.0 / ((count - 1));
+	for(index_type i = 0; i < count; ++i)
+		result.array[i] = i * denominator;
+
+	return result;
+}
+
+inline
+vector_f64 iota_f64(arena* arena, index_type count) {
+	auto result = make_uninitialized_vector<f64>(arena, count);
+	
+	assert(count > 1);
+
+	for(index_type i = 0; i < count; ++i) {
+		result.array[i] = i;
+	}
+
+	return result;	
+}
+
+inline
 void linear_add(v64 a, v64 b, f64 scalar_multiplier) {
 	auto count = result_length(a, b);
 	if(a.stride == 1) {

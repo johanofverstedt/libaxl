@@ -1,6 +1,7 @@
 
 #include "../vectors.h"
-#include "../expression_tree.h"
+#include "../vector_f64.h"
+#include "../lazy_eval/lazy_eval.h"
 #include "../circular_buffer.h"
 #include "../stack_arena.h"
 #include <iostream>
@@ -61,8 +62,9 @@ int main(int argc, char** argv) {
 	{
 		v64 ones = ones_f64(&arena, length(vres));
 		v64 ramp = ramp_f64(&arena, length(vres));
-		auto pv = eval(vres + ones * ramp,
-			&arena);
+		auto denominator = constant(2) * ones;
+		auto expr = (vres + ones * ramp) / denominator;
+		auto pv = eval(expr, &arena);
 		print_vector(pv, true);
 	}
 	{

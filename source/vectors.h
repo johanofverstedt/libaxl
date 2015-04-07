@@ -14,7 +14,7 @@ struct vector {
 	index_type count;
 	index_type stride;
 
-	inline T& operator[](index_type index);
+	ALWAYS_INLINE T& operator[](index_type index);
 };
 
 //
@@ -263,53 +263,6 @@ vector<T> zeros(arena *arena, index_type count) {
 //  Todo: Pull these out into a separate file!!!
 //
 
-inline
-vector_f64 ones_f64(arena* arena, index_type count) {
-	vector_f64 result = make_uninitialized_vector<f64>(arena, count);
-	
-	for(index_type i = 0; i < count; ++i)
-		result.array[i] = 1.0;
-
-	return result;
-}
-
-inline
-vector_f64 delta_f64(arena* arena, index_type count) {
-	vector_f64 result = zeros<f64>(arena, count);
-	
-	assert(count > 0);
-
-	result.array[0] = 1.0;
-
-	return result;
-}
-
-inline
-vector_f64 ramp_f64(arena* arena, index_type count) {
-	auto result = make_uninitialized_vector<f64>(arena, count);
-	
-	assert(count > 1);
-
-	double denominator = 1.0 / ((count - 1));
-	for(index_type i = 0; i < count; ++i)
-		result.array[i] = i * denominator;
-
-	return result;
-}
-
-inline
-vector_f64 iota_f64(arena* arena, index_type count) {
-	auto result = make_uninitialized_vector<f64>(arena, count);
-	
-	assert(count > 1);
-
-	for(index_type i = 0; i < count; ++i) {
-		result.array[i] = i;
-	}
-
-	return result;	
-}
-
 template <typename T>
 inline
 vector<T> wrap_vector(arena* arena, T* array, index_type count) {
@@ -364,31 +317,23 @@ void zero(vector_f64 v) {
 }
 
 template <typename T>
-inline
-T get(vector<T> v, index_type index) {
-	assert(index >= 0 && index < length(v));
+ALWAYS_INLINE
+T& vector<T>::operator[](index_type index) {
+	assert(index >= 0 && index < count); // Bounds checking
 
-	return v.array[index * v.stride];
-}
-
-template <typename T, typename V>
-inline
-void set(vector<T> v, index_type index, V value) {
-	assert(index >= 0 && index < length(v));
-
-	v.array[index * v.stride] = value;
+	return array[index * stride];
 }
 
 template <typename T>
 inline
-vector<T> copy(vector<T> in) {
+vector<T> copy(vector<T> in, arena* arena) {
 	vector<T> result;
 
 	assert(check(in));
 
 	auto len = length(in);
 
-	result.array = allocate<double>(in.arena, len);//in.arena->alloc(size);
+	result.array = allocate<double>(arena, len);//in.arena->alloc(size);
 	result.arena = in.arena;
 	result.count = len;
 	result.stride = in.width;
@@ -421,93 +366,9 @@ vector<T> copy_to(vector<T> in, vector<T> out) {
 	return out;
 }
 
-template <typename T1, typename T2, typename BinaryOp>
-inline
-vector<decltype(op(*a.array, *b.array))>
-apply_op(vector<T1> a, vector<T2> b, BinaryOp op) {
-	vector<decltype(op(*a.array, *b.array))> result;
-
-	index_type a_len = length(a);
-	index_type b_len = length(b);
-
-	if(a_len == 0 || b_len == 0) {
-		result.array = a.array;
-		result.arena = a.arena;
-		result.count = 0;
-		result.stride = 1;
-
-		return result;
-	}
-
-	//
-	//  Telescoping
-	//
-
-	if(a_len == 1 || b_len == 1) {
-		//Todo: fix it
-		assert(false);
-		result = make_uninitialized_vector(a.arena, length(a)); //zeros(a.arena, length(a));
-		return result;
-	}
-
-	assert(a.width == b.width);
-
-	index_type out_len = minimum(a_len, b_len);
-
-	result = make_uninitialized_vector(a.arena, out_len);
-
-	for(index_type i = 0; i < out_len; ++i) {
-		result.array[i] =
-			op(a.array[i * a.stride], b.array[i * b.stride]);
-	}
-
-	return result;
-}
-
 //
 //  vector operator overloads
 //
-/*
-template <typename T1, typename T2>
-inline
-auto operator+(vector<T1> a, vector<T2> b) -> vector<decltype(a.array[0] + b.array[0])> {
-	vector<decltype(a.array[0] + b.array[0])> result = make_uninitialized_vector<f64>(a.arena, minimum(a.count, b.count)); //apply_op(a, b, binary_add_op<double, double>());
-	
-	for (index_type i = 0; i < result.count; ++i)
-		result.array[i] = a.array[i * a.stride] + b.array[i * b.stride];
-
-	return result;
-}
-template <typename T1, typename T2>
-inline
-auto operator-(vector<T1> a, vector<T2> b) -> vector<decltype(a.array[0] - b.array[0])> {
-	vector<decltype(a.array[0] - b.array[0])> result = make_uninitialized_vector<f64>(a.arena, minimum(a.count, b.count)); //apply_op(a, b, binary_add_op<double, double>());
-
-	for (index_type i = 0; i < result.count; ++i)
-		result.array[i] = a.array[i * a.stride] - b.array[i * b.stride];
-
-	return result;
-}
-template <typename T1, typename T2>
-inline
-auto operator*(vector<T1> a, vector<T2> b) -> vector<decltype(a.array[0] * b.array[0])> {
-	vector<decltype(a.array[0] * b.array[0])> result = make_uninitialized_vector<f64>(a.arena, minimum(a.count, b.count)); //apply_op(a, b, binary_add_op<double, double>());
-
-	for (index_type i = 0; i < result.count; ++i)
-		result.array[i] = a.array[i * a.stride] * b.array[i * b.stride];
-
-	return result;
-}
-template <typename T1, typename T2>
-inline
-auto operator/(vector<T1> a, vector<T2> b) -> vector<decltype(a.array[0] / b.array[0])> {
-	vector<decltype(a.array[0] / b.array[0])> result = make_uninitialized_vector<f64>(a.arena, minimum(a.count, b.count)); //apply_op(a, b, binary_add_op<double, double>());
-
-	for (index_type i = 0; i < result.count; ++i)
-		result.array[i] = a.array[i * a.stride] / b.array[i * b.stride];
-
-	return result;
-}
 
 template <typename T1, typename T2>
 inline
@@ -568,17 +429,7 @@ vector<T1>& operator/=(vector<T1> &a, vector<T2> b) {
 	}
 
 	return a;
-}*/
-
-template <typename T>
-inline
-T& vector<T>::operator[](index_type index) {
-	assert(index >= 0);
-	assert(index < count);
-
-	return array[index * stride];
 }
-
 } // namespace libaxl
 
 // LIBAXL_VECTORS_GUARD
