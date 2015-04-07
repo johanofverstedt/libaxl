@@ -85,11 +85,6 @@ size_type value_type_size(vector<T> v) {
 }
 
 template <typename T>
-inline arena* get_arena(vector<T> v) {
-	return v.arena;
-}
-
-template <typename T>
 inline
 bool is_empty(vector<T> v) {
 	return length(v) == 0;
