@@ -351,10 +351,8 @@ vector make_vector(arena* arena, double** array, index_type count, index_type wi
 
 inline
 void fill(vector v, double value) {
-	BEGIN_VECTOR_MUTABLE_FOR_EACH(v, elem)
-		elem = value;
-	END_VECTOR_MUTABLE_FOR_EACH()
-/*	index_type test_count = v.count * v.stride;
+	for_each(v, [value](double& elem) -> void { elem = value; });
+	/*	index_type test_count = v.count * v.stride;
 	for(index_type i = 0; i < test_count; i += v.stride) {
 		v.array[i] = value;
 	}*/

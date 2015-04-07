@@ -165,6 +165,15 @@ int main(int argc, char** argv) {
 	std::cout << std::endl;
 
 	std::cout << "Used: " << arena.used() << std::endl;
+	
+	vector filled_vector1 = make_uninitialized_vector(&arena, 12, 1);
+	vector filled_vector2 = make_uninitialized_vector(&arena, 6, 2);
+	fill(filled_vector1, 3.14);
+	fill(filled_vector2, -3.14);
+
+	print_vector(filled_vector1, true);
+	print_vector(filled_vector2, true);
+
 	int in;
 	std::cin >> in;
 
