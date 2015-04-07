@@ -1,5 +1,6 @@
 
 #include "../vectors.h"
+#include "../expression_tree.h"
 #include "../circular_buffer.h"
 #include "../stack_arena.h"
 #include <iostream>
@@ -58,16 +59,19 @@ int main(int argc, char** argv) {
 	std::cout << "Used: " << arena.used() << std::endl;
 
 	{
-		auto pv = vres + ones_f64(&arena, length(vres));
+		v64 ones = ones_f64(&arena, length(vres));
+		v64 ramp = ramp_f64(&arena, length(vres));
+		auto pv = eval(vres + ones * ramp,
+			&arena);
 		print_vector(pv, true);
 	}
 	{
-		auto pv = vres * vres - vres;
-		print_vector(pv, true);
+		//auto pv = vres * vres - vres;
+		//print_vector(pv, true);
 	}
 	{
-		auto pv = vres * vres + vres;
-		print_vector(pv, true);
+		//auto pv = vres * vres + vres;
+		//print_vector(pv, true);
 	}
 
 	std::cout << "Drop even/odd:" << std::endl;

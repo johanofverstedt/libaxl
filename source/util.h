@@ -8,6 +8,8 @@
 
 #define LIBAXL_ERROR(msg) if(msg) assert(false, (msg)); else assert(false)
 
+#define ALWAYS_INLINE __forceinline
+
 namespace libaxl {
 //Types
 using size_type = size_t;

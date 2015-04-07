@@ -62,6 +62,11 @@ index_type length(vector<T> v) {
 	return v.count;
 }
 
+template <typename T>
+inline
+index_type result_length(vector<T> v) {
+	return length(v);
+}
 template <typename T1, typename T2>
 inline
 index_type result_length(vector<T1> v1, vector<T2> v2) {
@@ -77,6 +82,11 @@ template <typename T>
 inline
 size_type value_type_size(vector<T> v) {
 	return (size_type) sizeof(v.array[0]);
+}
+
+template <typename T>
+inline arena* get_arena(vector<T> v) {
+	return v.arena;
 }
 
 template <typename T>
@@ -457,7 +467,7 @@ apply_op(vector<T1> a, vector<T2> b, BinaryOp op) {
 //
 //  vector operator overloads
 //
-
+/*
 template <typename T1, typename T2>
 inline
 auto operator+(vector<T1> a, vector<T2> b) -> vector<decltype(a.array[0] + b.array[0])> {
@@ -558,7 +568,7 @@ vector<T1>& operator/=(vector<T1> &a, vector<T2> b) {
 	}
 
 	return a;
-}
+}*/
 
 template <typename T>
 inline
