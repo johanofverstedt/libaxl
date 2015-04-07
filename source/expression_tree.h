@@ -78,13 +78,6 @@ auto operator*(T1 a, T2 b) -> mul_expr<T1, T2> {
 	return result;
 }
 
-template <typename R, typename E>
-R get(E& e, index_type index) {
-	R result = e.op(get<R>(e.left, index), get<R>(e.right, index));
-
-	return result;
-}
-
 template <typename E>
 inline
 auto eval(E e, arena* arena) -> vector<decltype(e[0])> {
