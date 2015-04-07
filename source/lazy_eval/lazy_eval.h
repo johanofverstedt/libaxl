@@ -25,7 +25,6 @@ auto eval(E e, arena* arena) -> vector<decltype(e[0])> {
 	using value_type = decltype(e[0]);
 	vector<value_type> result;
 
-	result.arena = arena;
 	result.count = length(e);
 	result.array = allocate<value_type>(arena, result.count);
 	result.stride = 1;

@@ -54,7 +54,7 @@ vector_f64 iota_f64(arena* arena, index_type count) {
 
 inline
 void linear_add(v64 a, v64 b, f64 scalar_multiplier) {
-	auto count = result_length(a, b);
+	auto count = minimum(length(a), length(b));
 	if(a.stride == 1) {
 		if(b.stride == 1) {
 			//Use a SIMD-version here
@@ -82,7 +82,7 @@ void linear_add(v64 a, v64 b, f64 scalar_multiplier) {
 inline
 v64 linear_add(v64 a, v64 b, f64 scalar_multiplier, arena* arena) {
 	v64 result;
-	auto count = result_length(a, b);
+	auto count = minimum(length(a), length(b));
 	result = make_uninitialized_vector<f64>(arena, count);
 
 	if(a.stride == 1) {
@@ -112,11 +112,11 @@ v64 linear_add(v64 a, v64 b, f64 scalar_multiplier, arena* arena) {
 }
 
 inline
-v64 linear_blend(v64 a, v64 b, f64 t) {
+v64 linear_blend(v64 a, v64 b, f64 t, arena* arena) {
 	v64 result;
 	
-	auto count = result_length(a, b);//minimum(length(a), length(b));
-	result = make_uninitialized_vector<f64>(a.arena, count);
+	auto count = minimum(length(a), length(b));
+	result = make_uninitialized_vector<f64>(arena, count);
 
 	for(index_type i = 0; i < count; ++i) {
 		auto a_value = a[i];

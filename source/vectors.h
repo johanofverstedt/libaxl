@@ -10,7 +10,6 @@ namespace libaxl {
 template <typename T>
 struct vector {
 	T* array;
-	arena* arena;
 	index_type count;
 	index_type stride;
 
@@ -49,7 +48,6 @@ inline
 bool check(vector<T> v) {
 	assert(v.array != nullptr);
 	assert(v.stride >= 1 || v.stride <= -1);
-	assert(v.arena != nullptr);
 	/*bool result = (v.array != nullptr) && (v.stride >= 1 || v.stride <= -1) &&
 	(v.width >= 1) && (v.arena != nullptr);*/
 
@@ -64,34 +62,18 @@ index_type length(vector<T> v) {
 
 template <typename T>
 inline
-index_type result_length(vector<T> v) {
-	return length(v);
-}
-template <typename T1, typename T2>
-inline
-index_type result_length(vector<T1> v1, vector<T2> v2) {
-	return minimum(length(v1), length(v2));
-}
-template <typename T1, typename T2, typename T3>
-inline
-index_type result_length(vector<T1> v1, vector<T2> v2, vector<T3> v3) {
-	return minimum(minimum(length(v1), length(v2)), length(v3));
-}
-
-template <typename T>
-inline
 size_type value_type_size(vector<T> v) {
 	return (size_type) sizeof(v.array[0]);
 }
 
 template <typename T>
-inline
-bool is_empty(vector<T> v) {
+ALWAYS_INLINE
+bool is_empty(T v) {
 	return length(v) == 0;
 }
 
 template <typename T>
-inline
+ALWAYS_INLINE
 bool is_reverse(vector<T> v) {
 	return v.stride < 0;
 }
@@ -108,7 +90,6 @@ vector<T> reverse(vector<T> v) {
 	vector<T> result;
 
 	result.array = v.array + (v.count - 1) * v.stride;
-	result.arena = v.arena;
 	result.count = v.count;
 	result.stride = -v.stride;
 
@@ -126,7 +107,6 @@ vector<T> take_at_most(vector<T> v, index_type count) {
 		count = v.count;
 
 	result.array = v.array;
-	result.arena = v.arena;
 	result.count = count;
 	result.stride = v.stride;
 
@@ -142,7 +122,6 @@ vector<T> take(vector<T> v, index_type count) {
 	assert(count <= length(v));
 
 	result.array = v.array;
-	result.arena = v.arena;
 	result.count = count;
 	result.stride = v.stride;
 
@@ -178,7 +157,6 @@ vector<T> drop(vector<T> v, index_type count) {
 	result.array = v.array + count * v.stride;
 	result.count = v.count - count;
 	result.stride = v.stride;
-	result.arena = v.arena;
 
 	return result;
 }
@@ -192,7 +170,6 @@ vector<T> drop_even(vector<T> v) {
 	//[1, 2, 3, 4, 5] -> [2, 4]
 
 	result.array = v.array + v.stride;
-	result.arena = v.arena;
 	result.count = v.count / 2;
 	result.stride = 2 * v.stride;
 
@@ -208,7 +185,6 @@ vector<T> drop_odd(vector<T> v) {
 	//[1, 2, 3, 4, 5] -> [1, 3, 5]
 
 	result.array = v.array;
-	result.arena = v.arena;
 	result.count = (v.count + 1) / 2;
 	result.stride = 2 * v.stride;
 
@@ -225,6 +201,42 @@ void for_each(vector<T> v, Op op) {
 }
 
 //
+//  Stream functions
+//
+
+template <typename T>
+ALWAYS_INLINE
+T next(vector<T>& v) {
+	T result;
+	
+	assert(!is_empty(v));
+
+	result = *v.array;
+	v.array += v.stride;
+	--v.count;
+
+	return result;
+}
+
+template <typename T>
+ALWAYS_INLINE
+bool has_next(vector<T>& v) {
+	return !is_empty(v);
+}
+
+template <typename T>
+ALWAYS_INLINE
+void skip(vector<T>& v, index_type count) {
+	v = drop(v, count);
+}
+
+template <typename T>
+ALWAYS_INLINE
+void close(vector<T>& v) {
+	v.count = 0;
+}
+
+//
 //  vector factory functions
 //
 
@@ -237,7 +249,6 @@ vector<T> make_uninitialized_vector(arena *arena, index_type count) {
 	assert(count >= 0);
 
 	result.array = allocate<T>(arena, count);
-	result.arena = arena;
 	result.count = count;
 	result.stride = 1;
 
