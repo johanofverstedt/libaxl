@@ -6,37 +6,45 @@
 #include "vectors.h"
 
 namespace libaxl {
+template <typename T>
 struct vector_pair {
-	vector v[2];
+	vector<T> v[2];
 };
 
+template <typename T>
 inline
-vector_pair make_vector_pair(vector first, vector second) {
-	vector_pair result;
+vector_pair<T> make_vector_pair(vector<T> first, vector<T> second) {
+	vector_pair<T> result;
 
 	result.v[0] = first;
 	result.v[1] = second;
+
+	return result;
 }
 
+template <typename T>
 inline
-vector first(vector_pair vp) {
+vector<T> first(vector_pair<T> vp) {
 	return vp.v[0];
 }
 
+template <typename T>
 inline
-vector second(vector_pair vp) {
+vector<T> second(vector_pair<T> vp) {
 	return vp.v[1];
 }
 
+template <typename T>
 inline
-vector pair_indexed(vector_pair vp, index_type index) {
+vector<T> pair_indexed(vector_pair<T> vp, index_type index) {
 	assert(index == 0 || index == 1);
 
 	return vp.v[index];
 }
 
+template <typename T>
 inline
-vector_pair swap_pair(vector_pair vp) {
+vector_pair<T> swap_pair(vector_pair<T> vp) {
 	vector tmp = vp.v[0];
 	vp.v[0] = vp.v[1];
 	vp.v[1] = tmp;
@@ -44,8 +52,9 @@ vector_pair swap_pair(vector_pair vp) {
 	return vp;
 }
 
+template <typename T>
 inline
-void swap(vector_pair& a, vector_pair& b) {
+void swap(vector_pair<T>& a, vector_pair<T>& b) {
 	vector tmp = a.v[0];
 	a.v[0] = b.v[0];
 	b.v[0] = tmp;
@@ -55,30 +64,26 @@ void swap(vector_pair& a, vector_pair& b) {
 	b.v[1] = tmp;
 }
 
+template <typename T>
 inline
-index_type length(vector_pair vp) {
+index_type length(vector_pair<T> vp) {
 	return length(vp.v[0]) + length(vp.v[1]);
 }
 
+template <typename T>
 inline
-index_type width(vector_pair vp) {
-	assert(vp.v[0].width == vp.v[1].width);
-
-	return vp.v[0].width;
-}
-
-inline
-vector_pair reverse(vector_pair vp) {
-	vector_pair result = make_vector_pair(
+vector_pair<T> reverse(vector_pair<T> vp) {
+	vector_pair<T> result = make_vector_pair(
 		reverse(second(vp)),
 		reverse(first(vp)));
 
 	return result;
 }
 
+template <typename T>
 inline
-vector_pair take_at_most(vector_pair vp, index_type count) {
-	vector_pair result;
+vector_pair<T> take_at_most(vector_pair<T> vp, index_type count) {
+	vector_pair<T> result;
 
 	result.v[0] = take_at_most(first(vp), count);
 	result.v[1] = take_at_most(second(vp), count - length(result.v[0]));
@@ -86,18 +91,20 @@ vector_pair take_at_most(vector_pair vp, index_type count) {
 	return result;
 }
 
+template <typename T>
 inline
-vector_pair take(vector_pair vp, index_type count) {
-	vector_pair result = take_at_most(vp, count);
+vector_pair<T> take(vector_pair<T> vp, index_type count) {
+	vector_pair<T> result = take_at_most(vp, count);
 
 	assert(length(first(result)) + length(second(result)) == count);
 
 	return result;
 }
 
+template <typename T>
 inline
-vector_pair drop_at_most(vector_pair vp, index_type count) {
-	vector_pair result;
+vector_pair<T> drop_at_most(vector_pair<T> vp, index_type count) {
+	vector_pair<T> result;
 
 	result.v[0] = drop_at_most(first(vp), count);
 	result.v[1] = drop_at_most(second(vp), count - (length(first(vp)) - length(first(result))));
@@ -105,9 +112,10 @@ vector_pair drop_at_most(vector_pair vp, index_type count) {
 	return result;
 }
 
+template <typename T>
 inline
-vector_pair drop(vector_pair vp, index_type count) {
-	vector_pair result = drop_at_most(vp, count);
+vector_pair<T> drop(vector_pair<T> vp, index_type count) {
+	vector_pair<T> result = drop_at_most(vp, count);
 
 	assert(length(vp) - length(result) == count);
 

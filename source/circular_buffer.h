@@ -9,24 +9,27 @@
 
 namespace libaxl {
 
+template <typename T>
 struct circular_buffer {
-	vector buf_vector;
+	vector<T> buf_vector;
 	int tail;
 };
 
+template <typename T>
 inline
-circular_buffer make_circular_buffer(arena* arena, int count, int width) {
-	circular_buffer result;
+circular_buffer<T> make_circular_buffer(arena* arena, int count) {
+	circular_buffer<T> result;
 
-	result.buf_vector = zeros(arena, count, width);
+	result.buf_vector = zeros<T>(arena, count);
 	result.tail = 0;
 
 	return result;
 }
 
+template <typename T>
 inline
-circular_buffer make_circular_buffer(vector v, int tail = 0) {
-	circular_buffer result;
+circular_buffer<T> make_circular_buffer(vector<T> v, int tail = 0) {
+	circular_buffer<T> result;
 
 	assert(tail >= 0);
 	assert(tail < length(v));
@@ -37,8 +40,9 @@ circular_buffer make_circular_buffer(vector v, int tail = 0) {
 	return result;
 }
 
+template <typename T>
 inline
-int length(circular_buffer c) {
+index_type length(circular_buffer<T> c) {
 	return length(c.buf_vector);
 }
 
@@ -58,8 +62,9 @@ int length(circular_buffer c) {
  *  No copy of the contents is made, and no data is actually
  *  moved in memory.
  */
+template <typename T>
 inline
-circular_buffer rotate_left(circular_buffer c, int count) {
+circular_buffer<T> rotate_left(circular_buffer<T> c, int count) {
 	int size = length(c);
 
 	int new_tail = c.tail + count;
@@ -86,8 +91,9 @@ circular_buffer rotate_left(circular_buffer c, int count) {
  *  No copy of the contents is made, and no data is actually
  *  moved in memory.
  */
+template <typename T>
 inline
-circular_buffer rotate_right(circular_buffer c, int count) {
+circular_buffer<T> rotate_right(circular_buffer<T> c, int count) {
 	int size = length(c);
 
 
@@ -99,9 +105,10 @@ circular_buffer rotate_right(circular_buffer c, int count) {
 	return c;
 }
 
+template <typename T>
 inline
-vector_pair write(circular_buffer c, int count) {
-	vector_pair result;
+vector_pair<T> write(circular_buffer<T> c, int count) {
+	vector_pair<T> result;
 
 	int size = length(c);
 	assert(count <= size);
@@ -114,9 +121,10 @@ vector_pair write(circular_buffer c, int count) {
 	return result;
 }
 
+template <typename T>
 inline
-vector_pair read(circular_buffer c, int count, int offset) {
-	vector_pair result;
+vector_pair<T> read(circular_buffer<T> c, int count, int offset) {
+	vector_pair<T> result;
 
 	int size = length(c);
 	assert(offset >= 0);
@@ -134,9 +142,10 @@ vector_pair read(circular_buffer c, int count, int offset) {
 	return result;
 }
 
+template <typename T>
 inline
-vector_pair read(circular_buffer c, int count) {
-	vector_pair result;
+vector_pair<T> read(circular_buffer<T> c, int count) {
+	vector_pair<T> result;
 
 	int size = length(c);
 	assert(count <= size);
