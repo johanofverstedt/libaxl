@@ -86,20 +86,28 @@ string_buffer& operator+=(string_buffer& buf, T str) {
 }
 
 inline
-void newline(string_buffer& buf) {
-	append(buf, "\n");
-}
-
-inline
 void space(string_buffer& buf) {
 	append(buf, " ");
 }
+
 inline
 void space(string_buffer& buf, int count) {
 	while(count--) {
 		append(buf, " ");
 	}
 }
+
+inline
+void newline(string_buffer& buf) {
+	append(buf, "\n");
+}
+
+inline
+void newline(string_buffer& buf, int indent) {
+	append(buf, "\n");
+	space(buf, indent);
+}
+
 inline
 void comma(string_buffer& buf) {
 	append(buf, ", ");
