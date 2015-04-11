@@ -13,6 +13,18 @@ struct cg_context {
 	int indent;
 	const char* project_name;
 };
+
+inline
+cg_context make_cg_context(arena* arena, const char* project_name, int buffer_size) {
+	cg_context result;
+
+	result.arena = arena;
+	result.sb = make_string_buffer(arena, buffer_size);
+	result.indent = 0;
+	result.project_name = project_name;
+
+	return result;
+}
 }
 
 #endif

@@ -12,14 +12,15 @@
 #include "scope.h"
 #include "type.h"
 
+#include "variable.h"
+
 namespace libaxl {
 struct struct_type {
 	int32_t member_count;
 
 	const char* name;
 
-	type_header* member_types;
-	const char** member_names;
+	variable* members;
 };
 
 inline
@@ -30,14 +31,12 @@ struct_type make_struct(arena* arena, const char* name, int32_t member_count) {
 
 	result.name = name;
 
-	result.types = allocate<type_header>(arena, member_count);
-	result.names = allocate<const char*>(arena, member_count);
+	result.members = allocate<variable>(arena, member_count);
 
 	for(int32_t i = 0; i < member_count; ++i) {
-		result.member_types[i].id = type_info_generic;
-		result.member_types[i].type_name = "__UNSPECIFIED__";
+		result.members[i].type = make_type("__UNSPECIFIED__", type_info_generic);
 
-		result.member_names[i] = "__UNSPECIFIED__";
+		result.members[i].name = "__UNSPECIFIED__";
 	}
 
 	return result;
@@ -48,7 +47,7 @@ void set_struct_member_type(struct_type* st, int32_t member_index, type_header t
 	assert(member_index >= 0);
 	assert(member_index < st->member_count);
 
-	st->member_types[member_index] = th;
+	st->members[member_index].type = th;
 }
 
 inline
@@ -56,7 +55,7 @@ void set_struct_member_name(struct_type* st, int32_t member_index, const char* n
 	assert(member_index >= 0);
 	assert(member_index < st->member_count);
 
-	st->member_names[member_index] = name;
+	st->members[member_index].name = name;
 }
 
 inline
@@ -70,17 +69,27 @@ void codegen(cg_context* context, struct_type st) {
 
 	open_scope(context);
 
+	int32_t max_typename_len = 0;
+
 	for(int32_t i = 0; i < st.member_count; ++i) {
-		append(sb, st.member_types[i].type_name);
-		append(sb, " ");
-		append(sb, st.member_names[i]);
+		auto sb_state = push(sb);
+		codegen(context, st.members[i].type);
+		auto len = pop(sb, sb_state);
+		if(len > max_typename_len)
+			max_typename_len = len;
+	}
+
+	for(int32_t i = 0; i < st.member_count; ++i) {
+		//codegen(context, st.members[i].type);
+
+		codegen(context, st.members[i], true, max_typename_len);
 		append(sb, ";");
 
 		if(i != st.member_count - 1)
 			newline(sb, context->indent);
 	}
 
-	close_scope(context);
+	close_scope_with_semicolon(context, st.name);
 }
 
 }

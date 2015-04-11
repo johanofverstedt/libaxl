@@ -15,6 +15,21 @@ struct string_buffer {
 };
 
 inline
+void space(string_buffer& buf, int count);
+
+inline
+index_type push(string_buffer& sb) {
+	return sb.used;
+}
+
+inline
+index_type pop(string_buffer& sb, index_type state) {
+	auto new_used = sb.used;
+	sb.used = state;
+	return new_used - state;
+}
+
+inline
 string_buffer make_string_buffer(arena* arena, index_type initial_size = 32) {
 	assert(initial_size >= 0);
 	assert(arena != nullptr);
@@ -68,6 +83,16 @@ string_buffer& append(string_buffer& buf, const char* str) {
 }
 
 inline
+string_buffer& append(string_buffer& buf, const char* str, int length) {
+	auto state = push(buf);
+	append(buf, str);
+	auto appended_length = buf.used - state;
+	if(appended_length < length) {
+		space(buf, length - appended_length);
+	}
+}
+
+inline
 string_buffer& append(string_buffer& buf, const_string str) {
 	int slen = length(str);
 	int read_index = 0;
@@ -77,6 +102,12 @@ string_buffer& append(string_buffer& buf, const_string str) {
 	}
 
 	return buf;
+}
+
+inline
+void print(string_buffer& buf) {
+	buf.memory[buf.used] = '\0';
+	printf("%s", buf.memory);
 }
 
 template <typename T>

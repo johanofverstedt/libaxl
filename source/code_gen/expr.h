@@ -10,119 +10,59 @@
 #include "value.h"
 
 namespace libaxl {
-	/*
-struct expr_base {
-	virtual ~expr_base() = default;
+enum expr_id {
+	//Values
+	expr_id_constant,
+	expr_id_variable,
 
-	virtual value eval(arena* arena, int index) = 0;
+	//Unary
+	expr_id_logical_not,
+	expr_id_negate,
+	expr_id_address_of,
+	expr_id_dereference,
+	expr_id_square,
+	expr_id_cube,
+	expr_id_sqrt,
+	expr_id_log10,
+
+	expr_id_add,
+	expr_id_sub,
+	expr_id_mul,
+	expr_id_div,
+	expr_id_mod,
+	expr_id_pow,
+	
+	expr_id_subscript,
+
+	expr_id_bitwise_and,
+	expr_id_bitwise_or,
+
+	expr_id_logical_and,
+	expr_id_logial_or,
 };
-*/
-//Forward declaration
-struct expr;
-
-struct scalar_eval_interface {
-	value(*eval)(expr* e, arena* arena);
-};
-
-struct vector_eval_interface {
-	bool (*is_vectorizable)(void);
-	value(*eval)(expr* e, arena* arena, int index);
-};
-
-inline
-scalar_eval_interface implement_scalar_eval_interface(
-		value(*eval)(expr* e, arena* arena)) {
-
-	scalar_eval_interface result;
-
-	result.eval = eval;
-
-	return result;
-}
-
-inline
-vector_eval_interface implement_vector_eval_interface(
-		bool (*is_vectorizable)(void),
-		value(*eval)(expr* e, arena* arena, int index)) {
-
-	vector_eval_interface result;
-
-	result.is_vectorizable = is_vectorizable;
-	result.eval = eval;
-
-	return result;
-}
 
 struct expr {
 	void* data;
 	arena* expr_arena;
 
-	scalar_eval_interface scalar_eval_impl;
-	vector_eval_interface vector_eval_impl;
-	//value(*eval_function)(expr* e, arena* arena, int index);
+	int32_t id;
 };
 
 inline
-value scalar_eval(expr* e, arena* arena) {
-	value result;
-	
-	result = e->scalar_eval_impl.eval(e, arena);
-
-	return result;
-}
+value eval(expr e, arena* arena);
 inline
-value scalar_eval(expr& e, arena* arena) {
-	value result;
+value eval(expr e, arena* arena, int index);
 
-	result = e.scalar_eval_impl.eval(&e, arena);
-
-	return result;
-}
-
-inline
-value vector_eval(expr* e, arena* arena, int index) {
-	value result;
-	
-	result = e->vector_eval_impl.eval(e, arena, index);
-
-	return result;
-}
-inline
-value vector_eval(expr& e, arena* arena, int index) {
-	value result;
-
-	result = e.vector_eval_impl.eval(&e, arena, index);
-
-	return result;
-}
-
-value const_scalar_expr_eval(expr* e, arena* arena) {
+value eval_constant(expr* e, arena* arena) {
 	value* value_ptr = (value*)e->data;
 
 	return *value_ptr;
 }
 
-value const_vector_expr_eval(expr* e, arena* arena, int index) {
+value eval_constant(expr* e, arena* arena, int index) {
 	value* value_ptr = (value*)e->data;
 
 	return *value_ptr;
-}
-/*
-struct const_expr : expr_base {
-	value v;
-
-	virtual value eval(arena* arena, int index) {
-		return v;
-	}
-};
-*/
-
-bool is_vectorizable_true() {
-	return true;
-}
-
-bool is_vectorizable_false() {
-	return false;
 }
 
 inline
@@ -134,9 +74,7 @@ expr constant(arena* arena, value v) {
 
 	result.data = inner;
 	result.expr_arena = arena;
-	result.scalar_eval_impl = implement_scalar_eval_interface(&const_scalar_expr_eval);
-	result.vector_eval_impl = implement_vector_eval_interface(
-		&is_vectorizable_true, &const_vector_expr_eval);
+	result.id = expr_id_constant;
 
 	return result;
 }
@@ -166,12 +104,12 @@ value unary_op_eval(expr* e, arena* arena, int index) {
 
 	expr* child = (expr*)e->data;
 
-	result = vector_eval(child, arena, index);
+	result = eval(*child, arena);//, index);
 
 	return result;
 }
 
-value sqrt_expr_eval(expr* e, arena* arena, int index) {
+value eval_sqrt(expr* e, arena* arena, int index) {
 	value result;
 
 	value v = unary_op_eval(e, arena, index);
@@ -186,10 +124,10 @@ value sqrt_expr_eval(expr* e, arena* arena, int index) {
 void binary_op_eval(expr* e, arena* arena, int index, value* values_out) {
 	expr* children = (expr*)e->data;
 
-	values_out[0] = vector_eval(&children[0], arena, index);//children[0].eval_function(&children[0], arena, index);
-	values_out[1] = vector_eval(&children[1], arena, index);//children[1].eval_function(&children[1], arena, index);
+	values_out[0] = eval(children[0], arena, index);//children[0].eval_function(&children[0], arena, index);
+	values_out[1] = eval(children[1], arena, index);//children[1].eval_function(&children[1], arena, index);
 }
-value add_expr_eval(expr* e, arena* arena, int index) {
+value eval_add(expr* e, arena* arena, int index) {
 	value result;
 	value values[2];
 
@@ -205,7 +143,7 @@ value add_expr_eval(expr* e, arena* arena, int index) {
 	return result;
 }
 
-value mul_expr_eval(expr* e, arena* arena, int index) {
+value eval_mul(expr* e, arena* arena, int index) {
 	value result;
 	value values[2];
 
@@ -219,6 +157,28 @@ value mul_expr_eval(expr* e, arena* arena, int index) {
 	}
 
 	return result;
+}
+
+inline
+value eval(expr e, arena* arena) {
+	switch(e.id) {
+		case expr_id_constant:
+			return eval_constant(&e, arena);
+		case expr_id_add:
+			return eval_add(&e, arena, 0);
+		case expr_id_mul:
+			return eval_mul(&e, arena, 0);
+		case expr_id_sqrt:
+			return eval_sqrt(&e, arena, 0);
+	}
+	assert(false);
+	value error_value;
+	return error_value;
+}
+
+inline
+value eval(expr e, arena* arena, int index) {
+	return eval(e, arena);
 }
 
 /*
@@ -266,8 +226,7 @@ expr square_root(expr x) {
 	expr result = make_unary_expr(x);
 
 	result.expr_arena = x.expr_arena;
-	implement_scalar_eval_interface(&result, x.expr_arena);
-	result.eval_function = &sqrt_expr_eval;
+	result.id = expr_id_sqrt;
 
 	return result;
 }
@@ -290,7 +249,7 @@ expr operator+(expr a, expr b) {
 	expr result = make_binary_expr(a, b);
 
 	result.expr_arena = a.expr_arena;
-	result.eval_function = &add_expr_eval;
+	result.id = expr_id_add;
 
 	return result;
 }
@@ -300,7 +259,7 @@ expr operator*(expr a, expr b) {
 	expr result = make_binary_expr(a, b);
 
 	result.expr_arena = a.expr_arena;
-	result.eval_function = &mul_expr_eval;
+	result.id = expr_id_mul;
 
 	return result;
 }
@@ -367,12 +326,6 @@ enum bin_expr_op_enum {
 	bin_expr_op_max,
 };
 
-struct unary_expr {
-
-};
-struct bin_expr {
-
-};
 }
 
 #endif

@@ -5,9 +5,10 @@
 
 #include "value.h"
 #include "expr.h"
+#include "struct.h"
 
 using namespace libaxl;
-
+/*
 void open_scope(cg_context* context) {
 	string_buffer& sb = context->sb;
 	
@@ -43,7 +44,7 @@ void close_scope(cg_context* context, const char* comment) {
 	append(sb, comment);
 	newline(sb, context->indent);
 }
-
+*/
 void write_include_file(cg_context* context, const char* path) {
 	string_buffer& sb = context->sb;
 
@@ -164,10 +165,22 @@ int main(int argc, char** argv) {
 		expr e = constant(&arena, pi);
 
 		expr e2 = e * e;
-		//expr sqrt_of_two = constant(&arena, two) + square_root(constant(&arena, 2.0));
-		expr sqrt_of_two = constant(&arena, 2) + constant(&arena, 3);
+		expr sqrt_of_two = constant(&arena, two) + square_root(constant(&arena, 2.0));
+		//expr sqrt_of_two = constant(&arena, 2) + constant(&arena, 3);
 
-		value r = eval(sqrt_of_two, &arena, 0);//e2.eval_function(&e2, &arena, 0);
+		struct_type st = make_struct(&arena, "array_double", 2);
+		set_struct_member_type(&st, 0, make_ptr_type(&arena, make_type("double", type_info_double)));
+		set_struct_member_name(&st, 0, "elem");
+		set_struct_member_type(&st, 1, make_type("jabberwocky_comes_at_last", type_info_i32));
+		set_struct_member_name(&st, 1, "count");
+
+		cg_context context = make_cg_context(&arena, "libaxl", 1024);
+
+		codegen(&context, st);
+
+		print(context.sb);
+
+		value r = eval(sqrt_of_two, &arena);//e2.eval_function(&e2, &arena, 0);
 		const char* r_str = to_string(&arena, r);
 		std::cout << "result: " << r_str << std::endl;
 	}

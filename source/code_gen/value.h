@@ -22,20 +22,29 @@ struct value {
 	void* value_ptr;
 };
 
+template <typename T>
+inline
+value alloc_value(arena* arena, T x) {
+	value result;
+
+	T* ptr = allocate<T>(arena, 1);
+	*ptr = x;
+
+	result.value_ptr = ptr;
+
+	return result;
+}
+
 inline
 value make_i32_value(arena* arena, i32 x) {
 	value result;
 
+	result = alloc_value<i32>(arena, x);
 	type_header type;
 	type.id = type_info_i32;
 	type.type_name = "i32";
 
 	result.type = type;
-
-	i32* ptr = allocate<i32>(arena, 1);
-	*ptr = x;
-
-	result.value_ptr = ptr;
 
 	return result;
 }
@@ -44,16 +53,13 @@ inline
 value make_u32_value(arena* arena, u32 x) {
 	value result;
 
+	result = alloc_value<u32>(arena, x);
+
 	type_header type;
 	type.id = type_info_u32;
 	type.type_name = "u32";
 
 	result.type = type;
-
-	u32* ptr = allocate<u32>(arena, 1);
-	*ptr = x;
-
-	result.value_ptr = ptr;
 
 	return result;
 }
@@ -62,16 +68,13 @@ inline
 value make_i64_value(arena* arena, i64 x) {
 	value result;
 
+	result = alloc_value<i64>(arena, x);
+
 	type_header type;
 	type.id = type_info_i64;
 	type.type_name = "i64";
 
 	result.type = type;
-
-	i64* ptr = allocate<i64>(arena, 1);
-	*ptr = x;
-
-	result.value_ptr = ptr;
 
 	return result;
 }
@@ -80,16 +83,13 @@ inline
 value make_u64_value(arena* arena, u64 x) {
 	value result;
 
+	result = alloc_value<u64>(arena, x);
+
 	type_header type;
 	type.id = type_info_u64;
 	type.type_name = "u64";
 
 	result.type = type;
-
-	u64* ptr = allocate<u64>(arena, 1);
-	*ptr = x;
-
-	result.value_ptr = ptr;
 
 	return result;
 }
@@ -98,16 +98,13 @@ inline
 value make_float_value(arena* arena, float x) {
 	value result;
 
+	result = alloc_value<float>(arena, x);
+
 	type_header type;
 	type.id = type_info_float;
 	type.type_name = "float";
 
 	result.type = type;
-
-	float* ptr = allocate<float>(arena, 1);
-	*ptr = x;
-
-	result.value_ptr = ptr;
 
 	return result;
 }
@@ -116,16 +113,13 @@ inline
 value make_double_value(arena* arena, double x) {
 	value result;
 
+	result = alloc_value<double>(arena, x);
+
 	type_header type;
 	type.id = type_info_double;
 	type.type_name = "double";
 
 	result.type = type;
-
-	double* ptr = allocate<double>(arena, 1);
-	*ptr = x;
-
-	result.value_ptr = ptr;
 
 	return result;
 }
@@ -140,19 +134,19 @@ const char* to_string(arena* arena, value x) {
 	char* str = allocate<char>(arena, 32);
 	switch(x.type.id) {
 		case type_info_i32: {
-			sprintf(str, PRId32, read_value<i32>(x));
+			sprintf(str, "%" PRId32, read_value<i32>(x));
 			return str;
 		}
 		case type_info_u32: {
-			sprintf(str, PRIu32, read_value<u32>(x));
+			sprintf(str, "%" PRIu32, read_value<u32>(x));
 			return str;
 		}
 		case type_info_i64: {
-			sprintf(str, PRId64, read_value<i64>(x));
+			sprintf(str, "%" PRId64, read_value<i64>(x));
 			return str;
 		}
 		case type_info_u64: {
-			sprintf(str, PRIu64, read_value<u64>(x));
+			sprintf(str, "%" PRIu64, read_value<u64>(x));
 			return str;
 		}
 		case type_info_float: {

@@ -16,7 +16,7 @@ void open_scope(cg_context* context) {
 	context->indent += 4;
 
 	append(sb, "{");
-	newline(sb);
+	newline(sb, context->indent);
 }
 
 inline
@@ -30,6 +30,50 @@ void close_scope(cg_context* context) {
 	context->indent = new_indent;
 	newline(sb, context->indent);
 	append(sb, "}");
+	newline(sb, context->indent);
+}
+
+inline
+void close_scope(cg_context* context, const char* comment) {
+	string_buffer& sb = context->sb;
+
+	int new_indent = context->indent - 4;
+	if(new_indent < 0)
+		new_indent = 0;
+
+	context->indent = new_indent;
+	newline(sb, context->indent);
+	append(sb, "} // ");
+	append(sb, comment);
+	newline(sb, context->indent);
+}
+
+inline
+void close_scope_with_semicolon(cg_context* context) {
+	string_buffer& sb = context->sb;
+
+	int new_indent = context->indent - 4;
+	if(new_indent < 0)
+		new_indent = 0;
+
+	context->indent = new_indent;
+	newline(sb, context->indent);
+	append(sb, "};");
+	newline(sb, context->indent);
+}
+
+inline
+void close_scope_with_semicolon(cg_context* context, const char* comment) {
+	string_buffer& sb = context->sb;
+
+	int new_indent = context->indent - 4;
+	if(new_indent < 0)
+		new_indent = 0;
+
+	context->indent = new_indent;
+	newline(sb, context->indent);
+	append(sb, "}; // ");
+	append(sb, comment);
 	newline(sb, context->indent);
 }
 }
