@@ -16,11 +16,9 @@
 
 namespace libaxl {
 struct struct_type {
-	int32_t member_count;
-
+	int32_t     member_count;
 	const char* name;
-
-	variable* members;
+	variable*   members;
 };
 
 inline
@@ -80,8 +78,6 @@ void codegen(cg_context* context, struct_type st) {
 	}
 
 	for(int32_t i = 0; i < st.member_count; ++i) {
-		//codegen(context, st.members[i].type);
-
 		codegen(context, st.members[i], true, max_typename_len);
 		append(sb, ";");
 

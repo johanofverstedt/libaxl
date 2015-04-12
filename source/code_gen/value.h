@@ -124,15 +124,35 @@ value make_double_value(arena* arena, double x) {
 	return result;
 }
 
+inline
+value make_error_value() {
+	value result;
+
+	result.type.id = type_info_error;
+	result.type.type_name = "error";
+	result.value_ptr = nullptr;
+
+	return result;
+}
+
 template <typename T>
 inline
 T read_value(value v) {
 	return *(T*)v.value_ptr;
 }
 
+inline
+bool equal_type_id(value v1, value v2) {
+	return equal_type_id(v1.type, v2.type);
+}
+
 const char* to_string(arena* arena, value x) {
 	char* str = allocate<char>(arena, 32);
 	switch(x.type.id) {
+		case type_info_error: {
+			sprintf(str, "%s", "error");
+			return str;
+		}
 		case type_info_i32: {
 			sprintf(str, "%" PRId32, read_value<i32>(x));
 			return str;

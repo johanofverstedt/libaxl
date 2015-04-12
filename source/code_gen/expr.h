@@ -31,6 +31,8 @@ enum expr_id {
 	expr_id_div,
 	expr_id_mod,
 	expr_id_pow,
+	expr_id_min,
+	expr_id_max,
 	
 	expr_id_subscript,
 
@@ -109,6 +111,7 @@ value unary_op_eval(expr* e, arena* arena, int index) {
 	return result;
 }
 
+inline
 value eval_sqrt(expr* e, arena* arena, int index) {
 	value result;
 
@@ -121,23 +124,60 @@ value eval_sqrt(expr* e, arena* arena, int index) {
 	return result;
 }
 
+inline
 void binary_op_eval(expr* e, arena* arena, int index, value* values_out) {
 	expr* children = (expr*)e->data;
 
 	values_out[0] = eval(children[0], arena, index);//children[0].eval_function(&children[0], arena, index);
 	values_out[1] = eval(children[1], arena, index);//children[1].eval_function(&children[1], arena, index);
 }
+inline
 value eval_add(expr* e, arena* arena, int index) {
 	value result;
 	value values[2];
 
 	binary_op_eval(e, arena, index, values);
 
-	if (values[0].type.id == type_info_double && values[1].type.id == type_info_double) {
-		result = make_double_value(arena, read_value<double>(values[0]) + read_value<double>(values[1]));
+	if(equal_type_id(values[0], values[1])) {
+		switch(values[0].type.id) {
+			case type_info_i32:
+				result = make_i32_value(arena, read_value<i32>(values[0]) + read_value<i32>(values[1]));
+				break;
+			case type_info_double:
+				result = make_double_value(arena, read_value<double>(values[0]) + read_value<double>(values[1]));
+				break;
+			default:
+				result = make_error_value();
+				break;
+		}
+	} else {
+		result = make_error_value();
 	}
-	else if (values[0].type.id == type_info_i32 && values[1].type.id == type_info_i32) {
-		result = make_i32_value(arena, read_value<i32>(values[0]) + read_value<i32>(values[1]));
+
+	return result;
+}
+
+inline
+value eval_sub(expr* e, arena* arena, int index) {
+	value result;
+	value values[2];
+
+	binary_op_eval(e, arena, index, values);
+
+	if(equal_type_id(values[0], values[1])) {
+		switch(values[0].type.id) {
+			case type_info_i32:
+				result = make_i32_value(arena, read_value<i32>(values[0]) - read_value<i32>(values[1]));
+				break;
+			case type_info_double:
+				result = make_double_value(arena, read_value<double>(values[0]) - read_value<double>(values[1]));
+				break;
+			default:
+				result = make_error_value();
+				break;
+		}
+	} else {
+		result = make_error_value();
 	}
 
 	return result;
@@ -149,11 +189,156 @@ value eval_mul(expr* e, arena* arena, int index) {
 
 	binary_op_eval(e, arena, index, values);
 
-	if (values[0].type.id == type_info_double && values[1].type.id == type_info_double) {
-		result = make_double_value(arena, read_value<double>(values[0]) * read_value<double>(values[1]));
+	if(equal_type_id(values[0], values[1])) {
+		switch(values[0].type.id) {
+			case type_info_i32:
+				result = make_i32_value(arena, read_value<i32>(values[0]) * read_value<i32>(values[1]));
+				break;
+			case type_info_double:
+				result = make_double_value(arena, read_value<double>(values[0]) * read_value<double>(values[1]));
+				break;
+			default:
+				result = make_error_value();
+				break;
+		}
+	} else {
+		result = make_error_value();
 	}
-	else if (values[0].type.id == type_info_i32 && values[1].type.id == type_info_i32) {
-		result = make_i32_value(arena, read_value<i32>(values[0]) * read_value<i32>(values[1]));
+
+	return result;
+}
+
+value eval_div(expr* e, arena* arena, int index) {
+	value result;
+	value values[2];
+
+	binary_op_eval(e, arena, index, values);
+
+	if(equal_type_id(values[0], values[1])) {
+		switch(values[0].type.id) {
+			case type_info_i32:
+				result = make_i32_value(arena, read_value<i32>(values[0]) / read_value<i32>(values[1]));
+				break;
+			case type_info_double:
+				result = make_double_value(arena, read_value<double>(values[0]) / read_value<double>(values[1]));
+				break;
+			default:
+				result = make_error_value();
+				break;
+		}
+	} else {
+		result = make_error_value();
+	}
+
+	return result;
+}
+
+value eval_mod(expr* e, arena* arena, int index) {
+	value result;
+	value values[2];
+
+	binary_op_eval(e, arena, index, values);
+
+	if(equal_type_id(values[0], values[1])) {
+		switch(values[0].type.id) {
+			case type_info_i32:
+				result = make_i32_value(arena, read_value<i32>(values[0]) % read_value<i32>(values[1]));
+				break;
+			default:
+				result = make_error_value();
+				break;
+		}
+	} else {
+		result = make_error_value();
+	}
+
+	return result;
+}
+
+value eval_bitwise_or(expr* e, arena* arena, int index) {
+	value result;
+	value values[2];
+
+	binary_op_eval(e, arena, index, values);
+
+	if(values[0].type.id == type_info_i32 && values[1].type.id == type_info_i32) {
+		result = make_i32_value(arena, read_value<i32>(values[0]) | read_value<i32>(values[1]));
+	} else {
+		result = make_error_value();
+	}
+
+	return result;
+}
+
+value eval_bitwise_and(expr* e, arena* arena, int index) {
+	value result;
+	value values[2];
+
+	binary_op_eval(e, arena, index, values);
+
+	if(values[0].type.id == type_info_i32 && values[1].type.id == type_info_i32) {
+		result = make_i32_value(arena, read_value<i32>(values[0]) & read_value<i32>(values[1]));
+	} else {
+		result = make_error_value();
+	}
+
+	return result;
+}
+
+template <typename T>
+T minimum_helper(T a, T b) {
+	return (b < a) ? b : a;
+} 
+
+template <typename T>
+T maximum_helper(T a, T b) {
+	return (b < a) ? a : b;
+} 
+
+value eval_min(expr* e, arena* arena, int index) {
+	value result;
+	value values[2];
+
+	binary_op_eval(e, arena, index, values);
+
+	if(values[0].type.id == values[1].type.id) {
+		switch(values[0].type.id) {
+			case type_info_i32:
+				result = make_i32_value(arena,
+					minimum_helper(read_value<i32>(values[0]), read_value<i32>(values[1])));
+				break;
+			case type_info_double:
+				result = make_double_value(arena,
+					minimum_helper(read_value<double>(values[0]), read_value<double>(values[1])));
+				break;
+		}
+	} else {
+		result = make_error_value();
+	}
+
+	return result;
+}
+
+inline
+value eval_max(expr* e, arena* arena, int index) {
+	value result;
+	value values[2];
+
+	binary_op_eval(e, arena, index, values);
+
+	if(values[0].type.id == values[1].type.id) {
+		switch(values[0].type.id) {
+			case type_info_i32:
+				result = make_i32_value(arena,
+					maximum_helper(read_value<i32>(values[0]), read_value<i32>(values[1])));
+				break;
+			case type_info_double:
+				result = make_double_value(arena,
+					maximum_helper(read_value<double>(values[0]), read_value<double>(values[1])));
+				break;
+		}
+	} else {
+		result = make_error_value();
 	}
 
 	return result;
@@ -166,8 +351,22 @@ value eval(expr e, arena* arena) {
 			return eval_constant(&e, arena);
 		case expr_id_add:
 			return eval_add(&e, arena, 0);
+		case expr_id_sub:
+			return eval_sub(&e, arena, 0);
 		case expr_id_mul:
 			return eval_mul(&e, arena, 0);
+		case expr_id_div:
+			return eval_div(&e, arena, 0);
+		case expr_id_mod:
+			return eval_mod(&e, arena, 0);
+		case expr_id_bitwise_or:
+			return eval_bitwise_or(&e, arena, 0);
+		case expr_id_bitwise_and:
+			return eval_bitwise_and(&e, arena, 0);
+		case expr_id_min:
+			return eval_min(&e, arena, 0);
+		case expr_id_max:
+			return eval_max(&e, arena, 0);
 		case expr_id_sqrt:
 			return eval_sqrt(&e, arena, 0);
 	}
@@ -181,34 +380,6 @@ value eval(expr e, arena* arena, int index) {
 	return eval(e, arena);
 }
 
-/*
-struct add_expr : expr_base {
-	expr left;
-	expr right;
-
-	virtual value eval(arena* arena, int index) {
-		value x = left.ptr->eval(arena, index);
-		value y = right.ptr->eval(arena, index);
-
-		value result;
-
-		if(x.type.id == type_info_double && y.type.id == type_info_double) {
-			double xv = *(double*)x.value_ptr;
-			double yv = *(double*)y.value_ptr;
-
-			result = make_double_value(arena, xv + yv);
-		} else if(x.type.id == type_info_int && y.type.id == type_info_int) {
-			int xv = *(int*)x.value_ptr;
-			int yv = *(int*)y.value_ptr;
-
-			result = make_int_value(arena, xv + yv);
-		}
-
-		return result;
-	}
-};
-*/
-
 inline
 expr make_unary_expr(expr x) {
 	expr result;
@@ -217,16 +388,6 @@ expr make_unary_expr(expr x) {
 	*child = x;
 
 	result.data = child;
-
-	return result;
-}
-
-inline
-expr square_root(expr x) {
-	expr result = make_unary_expr(x);
-
-	result.expr_arena = x.expr_arena;
-	result.id = expr_id_sqrt;
 
 	return result;
 }
@@ -244,12 +405,40 @@ expr make_binary_expr(expr a, expr b) {
 	return result;
 }
 
+//
+//  Unary expressions
+//
+
+inline
+expr square_root(expr x) {
+	expr result = make_unary_expr(x);
+
+	result.expr_arena = x.expr_arena;
+	result.id = expr_id_sqrt;
+
+	return result;
+}
+
+//
+//  Binary expressions
+//
+
 inline
 expr operator+(expr a, expr b) {
 	expr result = make_binary_expr(a, b);
 
 	result.expr_arena = a.expr_arena;
 	result.id = expr_id_add;
+
+	return result;
+}
+
+inline
+expr operator-(expr a, expr b) {
+	expr result = make_binary_expr(a, b);
+
+	result.expr_arena = a.expr_arena;
+	result.id = expr_id_sub;
 
 	return result;
 }
@@ -264,67 +453,66 @@ expr operator*(expr a, expr b) {
 	return result;
 }
 
-/*
+inline
+expr operator/(expr a, expr b) {
+	expr result = make_binary_expr(a, b);
 
-template <typename V>
-struct expr {
-private:
-	struct concept {
-		virtual ~concept() = default;
+	result.expr_arena = a.expr_arena;
+	result.id = expr_id_div;
 
-		// Random access evaluation
-		virtual V operator()(int index) = 0;
-	};
-	template <typename T>
-	struct model : concept {
-		model(T x) : data(x) {}
-		virtual ~model() = default;
+	return result;
+}
 
-		virtual V operator()(int index) {
-			return data(index);
-		}
+inline
+expr operator%(expr a, expr b) {
+	expr result = make_binary_expr(a, b);
 
-		T data;
-	};
+	result.expr_arena = a.expr_arena;
+	result.id = expr_id_mod;
 
-	concept* ptr;
-public:
-	template <typename T>
-	expr()
+	return result;
+}
 
-	inline
-	V operator()(int index) {
+inline
+expr operator|(expr a, expr b) {
+	expr result = make_binary_expr(a, b);
 
-	}
+	result.expr_arena = a.expr_arena;
+	result.id = expr_id_bitwise_or;
 
+	return result;
+}
 
-};
-*/
-enum expr_type_enum {
-	expr_type_unary,
-	expr_type_binary,
-};
-enum unary_expr_op_enum {
-	unary_expr_op_not,
-	unary_expr_op_negate,
-	unary_expr_op_square,
-	unary_expr_op_cube,
-	unary_expr_op_sqrt,
-	unary_expr_op_abs,
-	unary_expr_op_clamp,
-	unary_expr_op_clamp_upper,
-	unary_expr_op_clamp_lower,
-};
-enum bin_expr_op_enum {
-	bin_expr_op_add,
-	bin_expr_op_sub,
-	bin_expr_op_mul,
-	bin_expr_op_div,
-	bin_expr_op_pow,
-	bin_expr_op_log10,
-	bin_expr_op_min,
-	bin_expr_op_max,
-};
+inline
+expr operator&(expr a, expr b) {
+	expr result = make_binary_expr(a, b);
+
+	result.expr_arena = a.expr_arena;
+	result.id = expr_id_bitwise_and;
+
+	return result;
+}
+
+inline
+expr minimum(expr a, expr b) {
+	expr result = make_binary_expr(a, b);
+
+	result.expr_arena = a.expr_arena;
+	result.id = expr_id_min;
+
+	return result;
+}
+
+inline
+expr maximum(expr a, expr b) {
+	expr result = make_binary_expr(a, b);
+
+	result.expr_arena = a.expr_arena;
+	result.id = expr_id_max;
+
+	return result;
+}
+
 
 }
 

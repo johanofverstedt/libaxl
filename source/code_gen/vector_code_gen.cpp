@@ -155,7 +155,8 @@ int main(int argc, char** argv) {
 		
 		value pi = make_double_value(&arena, 3.1415);
 		//value pi2 = make_double_value(&arena, 3.1415);
-		value two = make_double_value(&arena, 2);
+		value two = make_i32_value(&arena, 3);
+		value five = make_i32_value(&arena, 7);
 
 		const char* pi_str = to_string(&arena, pi);
 		std::cout << "pi: " << pi_str << std::endl;
@@ -168,10 +169,12 @@ int main(int argc, char** argv) {
 		expr sqrt_of_two = constant(&arena, two) + square_root(constant(&arena, 2.0));
 		//expr sqrt_of_two = constant(&arena, 2) + constant(&arena, 3);
 
+
+
 		struct_type st = make_struct(&arena, "array_double", 2);
 		set_struct_member_type(&st, 0, make_ptr_type(&arena, make_type("double", type_info_double)));
 		set_struct_member_name(&st, 0, "elem");
-		set_struct_member_type(&st, 1, make_type("jabberwocky_comes_at_last", type_info_i32));
+		set_struct_member_type(&st, 1, make_type("i32", type_info_i32));
 		set_struct_member_name(&st, 1, "count");
 
 		cg_context context = make_cg_context(&arena, "libaxl", 1024);
@@ -180,9 +183,9 @@ int main(int argc, char** argv) {
 
 		print(context.sb);
 
-		value r = eval(sqrt_of_two, &arena);//e2.eval_function(&e2, &arena, 0);
+		value r = eval(constant(&arena, five) - constant(&arena, two), &arena);//e2.eval_function(&e2, &arena, 0);
 		const char* r_str = to_string(&arena, r);
-		std::cout << "result: " << r_str << std::endl;
+		std::cout << "result: " << r_str << " (" << r.type.type_name << ")" << std::endl;
 	}
 
 	int in;

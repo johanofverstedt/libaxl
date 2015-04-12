@@ -6,6 +6,7 @@
 
 namespace libaxl {
 enum type_info_enum {
+	type_info_error,
 	type_info_generic,
 	type_info_void,
 	type_info_char,
@@ -54,6 +55,11 @@ type_header make_ptr_type(arena* arena, type_header sub_type) {
 inline
 type_header make_type(const char* name, int id) {
 	return make_type(name, id, nullptr);
+}
+
+inline
+bool equal_type_id(type_header t1, type_header t2) {
+	return t1.id == t2.id;
 }
 
 inline
