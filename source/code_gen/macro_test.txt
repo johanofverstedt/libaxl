@@ -1,0 +1,28 @@
+
+def vector_eval(rhs: <expr>, arena* arena) -> [value_type(rhs)] {
+	result: [value_type[rhs]] = alloc[value_type[rhs]](arena, length(rhs));
+
+	for(i := 0; i < length(rhs); i = i + 1) {
+		result[i] = rhs[i];
+	}
+
+	return result;
+}
+
+//usage code:
+result: [double] = eval(rhs)
+
+macro eval(count: i32, lhs: <var>, rhs: <expr>) {
+	yield rhs_len := length(rhs);
+	yield len  := min(count, rhs_len);
+
+    lhs =
+
+	for(i: i32 = 0; i < a; i = i + 1) {
+		lhs[i] = rhs[i];
+	}
+}
+
+...
+eval(256, vec: [double], )
+...

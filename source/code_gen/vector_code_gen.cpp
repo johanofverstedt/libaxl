@@ -169,7 +169,9 @@ int main(int argc, char** argv) {
 		expr sqrt_of_two = constant(&arena, two) + square_root(constant(&arena, 2.0));
 		//expr sqrt_of_two = constant(&arena, 2) + constant(&arena, 3);
 
-
+		//vector expr syntax:
+		//[a + b * c + d] or
+		//[a + b * c + d, arena1], [a + c, arena2]
 
 		struct_type st = make_struct(&arena, "array_double", 2);
 		set_struct_member_type(&st, 0, make_ptr_type(&arena, make_type("double", type_info_double)));

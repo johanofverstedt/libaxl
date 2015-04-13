@@ -38,6 +38,7 @@ enum expr_id {
 
 	expr_id_bitwise_and,
 	expr_id_bitwise_or,
+	expr_id_bitwise_xor,
 
 	expr_id_logical_and,
 	expr_id_logial_or,
