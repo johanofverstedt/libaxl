@@ -26,3 +26,53 @@ macro eval(count: i32, lhs: <var>, rhs: <expr>) {
 ...
 eval(256, vec: [double], )
 ...
+
+random_access_range > forward_range > forward_stream
+
+input_stream:
+//operations:
+//deref -> value
+//next
+
+def operator_rhs_deref(s: T) -> value_type(T) {
+	return rand(s);
+}
+
+def operator??(s: T) -> boolean {
+	return s.count > 0;
+}
+
+def operator++(s: T) {
+	++s.first;
+	--s.count;
+}
+
+forward_stream:
+//operations:
+//+all of input_stream
+//
+
+def operator_lhs_deref(s: T) -> value_type(T)* {
+	
+}
+
+int*** p;
+q:= value_of(p)
+
+//type macros
+
+type_name(x)
+type_size(x)
+expr_type(a + b)
+typedef value_type(x) {
+	if(expr_type(*x) == undefined)
+		return x;
+	return value_type(x);
+}
+
+def value_of(x) {
+	if(expr_type(*x) == undefined) {
+		return x;
+	}
+	return *x;
+}
