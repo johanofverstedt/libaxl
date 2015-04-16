@@ -10,10 +10,30 @@
 
 namespace libaxl {
 inline
+void indent(cg_context* context) {
+	int new_indent = context->indent + context->indent_delta;
+	if(new_indent < 0) {
+		new_indent = 0;
+	}
+
+	context->indent = new_indent;
+}
+
+inline
+void unindent(cg_context* context) {
+	int new_indent = context->indent - context->indent_delta;
+	if(new_indent < 0) {
+		new_indent = 0;
+	}
+
+	context->indent = new_indent;
+}
+
+inline
 void open_scope(cg_context* context) {
 	string_buffer& sb = context->sb;
 	
-	context->indent += 4;
+	indent(context);
 
 	append(sb, "{");
 	newline(sb, context->indent);
@@ -23,11 +43,8 @@ inline
 void close_scope(cg_context* context) {
 	string_buffer& sb = context->sb;
 
-	int new_indent = context->indent - 4;
-	if(new_indent < 0)
-		new_indent = 0;
+	unindent(context);
 
-	context->indent = new_indent;
 	newline(sb, context->indent);
 	append(sb, "}");
 	newline(sb, context->indent);
@@ -37,11 +54,8 @@ inline
 void close_scope(cg_context* context, const char* comment) {
 	string_buffer& sb = context->sb;
 
-	int new_indent = context->indent - 4;
-	if(new_indent < 0)
-		new_indent = 0;
+	unindent(context);
 
-	context->indent = new_indent;
 	newline(sb, context->indent);
 	append(sb, "} // ");
 	append(sb, comment);
@@ -52,11 +66,8 @@ inline
 void close_scope_with_semicolon(cg_context* context) {
 	string_buffer& sb = context->sb;
 
-	int new_indent = context->indent - 4;
-	if(new_indent < 0)
-		new_indent = 0;
+	unindent(context);
 
-	context->indent = new_indent;
 	newline(sb, context->indent);
 	append(sb, "};");
 	newline(sb, context->indent);
@@ -66,11 +77,8 @@ inline
 void close_scope_with_semicolon(cg_context* context, const char* comment) {
 	string_buffer& sb = context->sb;
 
-	int new_indent = context->indent - 4;
-	if(new_indent < 0)
-		new_indent = 0;
+	unindent(context);
 
-	context->indent = new_indent;
 	newline(sb, context->indent);
 	append(sb, "}; // ");
 	append(sb, comment);

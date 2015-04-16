@@ -61,11 +61,13 @@ void codegen(cg_context* context, struct_type st) {
 	string_buffer& sb = context->sb;
 	
 	newline(sb, context->indent);
-	append(sb, "struct ");
+	append(sb, "// ");
 	append(sb, st.name);
-	append(sb, " ");
+	newline(sb, context->indent);
+	append(sb, "typedef struct {");
 
-	open_scope(context);
+	indent(context);
+	newline(sb, context->indent);
 
 	int32_t max_typename_len = 0;
 
@@ -85,7 +87,15 @@ void codegen(cg_context* context, struct_type st) {
 			newline(sb, context->indent);
 	}
 
-	close_scope_with_semicolon(context, st.name);
+	unindent(context);
+	newline(sb, context->indent);
+	append(sb, "} ");
+	append(sb, st.name);
+	append(sb, ";");
+
+	newline(sb, context->indent);
+	newline(sb, context->indent);
+	//close_scope_with_semicolon(context, st.name);
 }
 
 }
