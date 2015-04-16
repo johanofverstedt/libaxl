@@ -54,33 +54,6 @@ void write_include_file(cg_context* context, const char* path) {
 	newline(sb);
 }
 
-void open_namespace(cg_context* context, const char* name) {
-	string_buffer& sb = context->sb;
-
-	append(sb, "namespace ");
-	append(sb, name);
-	append(sb, " ");
-
-	open_scope(context);
-}
-
-void close_namespace(cg_context* context, const char* name) {
-	string_buffer& sb = context->sb;
-
-	const char* preamble = "end of namespace ";
-	index_type preamble_length = (index_type)strlen(preamble);
-	index_type name_length = (index_type)strlen(name);
-
-	index_type len = (index_type)(preamble_length + name_length + 1);
-	char* str = allocate<char>(context->arena, len);
-
-	memcpy(str, preamble, preamble_length);
-	memcpy(str + preamble_length, name, name_length);
-	str[preamble_length + name_length] = '\0';
-
-	close_scope(context, str);
-}
-
 void write_inline(cg_context* context, bool always_inline) {
 	string_buffer& sb = context->sb;
 
@@ -122,12 +95,6 @@ void vector_codegen(vector_cg_settings settings) {
 	write_include_file(&context, "util.h");
 
 	newline(context.sb, context.indent);
-
-	open_namespace(&context, "libaxl");
-
-
-
-	close_namespace(&context, "libaxl");
 
 	write_include_guard(&context, settings.type_name, false);
 
