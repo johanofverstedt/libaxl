@@ -18,6 +18,7 @@ enum type_info_enum {
 	type_info_float,
 	type_info_double,
 	type_info_ptr,
+	type_info_struct,
 	type_info_array,
 	type_info_static_array,
 	type_info_user_defined,
@@ -67,6 +68,8 @@ void codegen(cg_context* context, type_header th) {
 	if(th.sub_type != nullptr) {
 		codegen(context, *th.sub_type);
 	}
+	if(th.id == type_info_struct)
+		append(context->sb, "struct ");
 	append(context->sb, th.type_name);
 }
 inline
@@ -86,6 +89,13 @@ void codegen(cg_context* context, type_header th, int type_len, const char* vari
 		append(context->sb, "[]");
 	} else if(th.id == type_info_ptr) {
 		append(context->sb, "*");
+		auto appended_length = push(context->sb) - state;
+		if(appended_length <= type_len)
+			space(context->sb, 1 + type_len - appended_length);
+		append(context->sb, variable_name);		
+	} else if(th.id == type_info_struct) {
+		append(context->sb, "struct ");
+
 		auto appended_length = push(context->sb) - state;
 		if(appended_length <= type_len)
 			space(context->sb, 1 + type_len - appended_length);

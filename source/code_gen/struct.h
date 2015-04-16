@@ -64,7 +64,9 @@ void codegen(cg_context* context, struct_type st) {
 	append(sb, "// ");
 	append(sb, st.name);
 	newline(sb, context->indent);
-	append(sb, "typedef struct {");
+	append(sb, "typedef struct ");
+	append(sb, st.name);
+	append(sb, " {");
 
 	indent(context);
 	newline(sb, context->indent);

@@ -6,3 +6,5 @@ cl.exe hello_world.c
 echo --- *** ---
 
 hello_world.exe
+
+pause

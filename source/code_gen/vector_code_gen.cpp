@@ -79,7 +79,6 @@ void write_func0_header(cg_context* context, const char* name, const char* retur
 }
 
 void write_sum_func(cg_context* context) {
-	newline(context->sb, context->indent);
 	append(context->sb, "double sum(array_double v) {");
 	indent(context);
 	newline(context->sb, context->indent);
@@ -100,7 +99,7 @@ void write_sum_func(cg_context* context) {
 	newline(context->sb, context->indent);
 	newline(context->sb, context->indent);
 
-
+/*
 	newline(context->sb, context->indent);
 	append(context->sb, "double sum(double* a, i32 count) {");
 	indent(context);
@@ -121,7 +120,7 @@ void write_sum_func(cg_context* context) {
 	append(context->sb, "} // sum");
 	newline(context->sb, context->indent);
 	newline(context->sb, context->indent);
-
+*/
 
 }
 
@@ -145,7 +144,7 @@ void write_entry_point(cg_context* context) {
 	newline(context->sb, context->indent);
 	append(context->sb, "double result = sum(aa);");
 	newline(context->sb, context->indent);
-	append(context->sb, "printf(\"%f\", result);");
+	append(context->sb, "printf(\"%f %d\", result, sizeof(i64));");
 	newline(context->sb, context->indent);
 	append(context->sb, "return 0;");
 	unindent(context);
@@ -196,11 +195,13 @@ void vector_codegen(vector_cg_settings settings) {
 	append(context.sb, "typedef unsigned long long u64;");
 	newline(context.sb, context.indent);
 
-	struct_type st = make_struct(&arena, "array_double", 2);
+	struct_type st = make_struct(&arena, "array_double", 3);
 	set_struct_member_type(&st, 0, make_ptr_type(&arena, make_type("double", type_info_double)));
 	set_struct_member_name(&st, 0, "elem");
 	set_struct_member_type(&st, 1, make_type("i32", type_info_i32));
 	set_struct_member_name(&st, 1, "count");
+	set_struct_member_type(&st, 2, make_ptr_type(&arena, make_type("array_double", type_info_struct)));
+	set_struct_member_name(&st, 2, "next");
 
 	codegen(&context, st);	
 
