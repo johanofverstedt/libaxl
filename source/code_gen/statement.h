@@ -6,6 +6,7 @@
 
 namespace libaxl {
 enum statement_id_enum {
+	statement_id_void,
 	statement_id_assignment,
 	statement_id_return,
 	statement_id_decl_var,
@@ -23,6 +24,16 @@ struct statement {
 struct decl_assign_pair {
 	variable var;
 	expr e;
+};
+
+struct expr_statement_pair {
+	expr e;
+	statement s;
+};
+
+struct scope {
+	int32_t statement_count;
+	statement* statements;
 };
 
 inline
@@ -44,6 +55,9 @@ statement make_statement(arena* arena, int id) {
 		case statement_id_decl_assign_var:
 			result.data = allocate<decl_assign_pair>(arena, 1);
 			break;
+		case statement_id_while:
+			result.data = allocate<expr_statement_pair>(arena, 1);
+			break;
 		default:
 			assert(false);
 	}
@@ -52,9 +66,50 @@ statement make_statement(arena* arena, int id) {
 }
 
 inline
+statement make_scope_statement(arena* arena, int statement_count) {
+	statement result;
+
+	result.id = statement_id_scope;
+
+	scope* scope_ptr = allocate<scope>(arena, 1);
+	result.data = scope_ptr;
+
+	scope_ptr->statement_count = statement_count;
+	scope_ptr->statements = allocate<statement>(arena, statement_count);
+
+	return result;
+}
+
+inline
 void codegen(cg_context* context, statement s) {
 	string_buffer& sb = context->sb;
-	append(sb, ";"); //Temporary
+
+	switch(s.id) {
+		case statement_id_assignment:
+		codegen(context, ((expr*)s.data)[0]);
+		append(sb, " = ");
+		codegen(context, ((expr*)s.data)[1]);
+		append(sb, ";");
+		break;
+		
+		case statement_id_return:
+		append(sb, "return ");
+		codegen(context, ((expr*)s.data)[0]);
+		append(sb, ";");
+		break;
+
+		case statement_id_while:
+		append(sb, "while(");
+		codegen(context, ((expr_statement_pair*)s.data)->e);
+		append(sb, ") ");
+		codegen(context, ((expr_statement_pair*)s.data)->s);
+		break;
+
+		default:
+		append(sb, ";"); //Temporary
+		break;
+	}
+	
 }
 
 }

@@ -224,6 +224,21 @@ void vector_codegen(vector_cg_settings settings) {
 
 	function f_add = make_function(&arena, f_add_header, 5);
 
+	for(int i = 0; i < 5; ++i) {
+		f_add.statements[i].id = statement_id_void;
+	}
+
+	{
+		variable a1 = f_add_header.parameters[1];
+		variable a2 = f_add_header.parameters[2];
+		variable r = f_add_header.parameters[0];
+		f_add.statements[0] = make_statement(&arena, statement_id_assignment);
+		((expr*)f_add.statements[0].data)[0] =
+		    dereference_expression(&arena, variable_expression(&arena, r));
+		((expr*)f_add.statements[0].data)[1] =
+		    dereference_expression(&arena, variable_expression(&arena, a1)) + dereference_expression(&arena, variable_expression(&arena, a2));
+	}
+
 	codegen(&context, f_add);
 
 	write_sum_func(&context);

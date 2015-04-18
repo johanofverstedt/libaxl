@@ -10,6 +10,7 @@
 
 #include "type.h"
 #include "value.h"
+#include "variable.h"
 
 namespace libaxl {
 enum expr_id {
@@ -52,6 +53,32 @@ struct expr {
 
 	int32_t id;
 };
+
+inline
+void codegen(cg_context* context, expr e) {
+	switch(e.id) {
+		case expr_id_variable:
+			codegen(context, *(variable*)e.data, false);
+			break;
+
+		case expr_id_dereference:
+		    append(context->sb, "*(");
+		    codegen(context, *((expr*)e.data));
+		    append(context->sb, ")");
+		    break;
+
+		case expr_id_add:
+			codegen(context, ((expr*)e.data)[0]);
+			append(context->sb, " + ");
+			codegen(context, ((expr*)e.data)[1]);
+			break;
+		case expr_id_sub:
+			codegen(context, ((expr*)e.data)[0]);
+			append(context->sb, " - ");
+			codegen(context, ((expr*)e.data)[1]);
+			break;
+	}
+}
 
 inline
 value eval(expr e, arena* arena);
@@ -100,6 +127,34 @@ expr constant(arena* arena, double v) {
 	value val = make_double_value(arena, v);
 
 	result = constant(arena, val);
+
+	return result;
+}
+
+inline
+expr variable_expression(arena* arena, variable v) {
+	expr result;
+
+	variable* inner = allocate<variable>(arena, 1);
+	*inner = v;
+
+	result.data = inner;
+	result.expr_arena = arena;
+	result.id = expr_id_variable;
+
+	return result;
+}
+
+inline
+expr dereference_expression(arena* arena, expr e) {
+	expr result;
+
+	expr* inner = allocate<expr>(arena, 1);
+	*inner = e;
+
+	result.data = inner;
+	result.expr_arena = arena;
+	result.id = expr_id_dereference;
 
 	return result;
 }

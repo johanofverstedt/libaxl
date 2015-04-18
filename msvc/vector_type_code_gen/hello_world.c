@@ -20,7 +20,7 @@ typedef struct array_double {
 
 static
 void add(double* dest, double* src1, double* src2, i32 count) {
-    ;
+    *(dest) = *(src1) + *(src2);
     ;
     ;
     ;
