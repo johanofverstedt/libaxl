@@ -38,10 +38,10 @@ statement make_statement(arena* arena, int id) {
 		case statement_id_return:
 			result.data = allocate<expr>(arena, 1);
 			break;
-		case statement_decl_var:
+		case statement_id_decl_var:
 			result.data = allocate<variable>(arena, 1);
 			break;
-		case statement_decl_assign_var:
+		case statement_id_decl_assign_var:
 			result.data = allocate<decl_assign_pair>(arena, 1);
 			break;
 		default:
@@ -50,6 +50,13 @@ statement make_statement(arena* arena, int id) {
 
 	return result;
 }
+
+inline
+void codegen(cg_context* context, statement s) {
+	string_buffer& sb = context->sb;
+	append(sb, ";"); //Temporary
+}
+
 }
 
 #endif

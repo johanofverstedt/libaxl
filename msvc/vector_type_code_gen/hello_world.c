@@ -18,6 +18,15 @@ typedef struct array_double {
     struct array_double* next;
 } array_double;
 
+static
+void add(double* dest, double* src1, double* src2, i32 count) {
+    ;
+    ;
+    ;
+    ;
+    ;
+} // add
+
 double sum(array_double v) {
     double s = 0.0;
     for(i32 i = 0; i < v.count; ++i) {

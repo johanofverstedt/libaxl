@@ -6,6 +6,7 @@
 #include "value.h"
 #include "expr.h"
 #include "struct.h"
+#include "function.h"
 
 using namespace libaxl;
 /*
@@ -208,6 +209,22 @@ void vector_codegen(vector_cg_settings settings) {
 	//Type definitions exported done
 
 	//Function definitions...
+
+	function_header f_add_header = make_function_header(&arena, "add", 4);
+	f_add_header.return_type = make_type("void", type_info_void);
+
+	f_add_header.parameters[0].name = "dest";
+	f_add_header.parameters[0].type = make_ptr_type(&arena, make_type("double", type_info_double));
+	f_add_header.parameters[1].name = "src1";
+	f_add_header.parameters[1].type = make_ptr_type(&arena, make_type("double", type_info_double));
+	f_add_header.parameters[2].name = "src2";
+	f_add_header.parameters[2].type = make_ptr_type(&arena, make_type("double", type_info_double));
+	f_add_header.parameters[3].name = "count";
+	f_add_header.parameters[3].type = make_type("i32", type_info_i32);
+
+	function f_add = make_function(&arena, f_add_header, 5);
+
+	codegen(&context, f_add);
 
 	write_sum_func(&context);
 	write_entry_point(&context);

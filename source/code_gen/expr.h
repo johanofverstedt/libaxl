@@ -6,6 +6,8 @@
 #include "../stack_arena.h"
 #include "../string_buffer.h"
 
+#include "cg_context.h"
+
 #include "type.h"
 #include "value.h"
 

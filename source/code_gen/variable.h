@@ -19,7 +19,14 @@ void codegen(cg_context* context, variable x, bool decl, int type_len = -1) {
 	string_buffer& sb = context->sb;
 	
 	if(decl) {
-		codegen(context, x.type, type_len, x.name);
+		if (type_len == -1) {
+			type_len = type_name_length(x.type);
+
+			codegen(context, x.type, type_len, x.name);
+		}
+		else {
+			codegen(context, x.type, type_len, x.name);
+		}
 		//append(sb, x.type.type_name);
 		//append(sb, " ");
 	} else {

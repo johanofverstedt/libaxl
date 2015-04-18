@@ -64,6 +64,14 @@ bool equal_type_id(type_header t1, type_header t2) {
 }
 
 inline
+size_t type_name_length(type_header th) {
+	if(th.sub_type != nullptr) {
+		return type_name_length(*th.sub_type) + strlen(th.type_name);
+	}
+	return strlen(th.type_name);
+}
+
+inline
 void codegen(cg_context* context, type_header th) {
 	if(th.sub_type != nullptr) {
 		codegen(context, *th.sub_type);
