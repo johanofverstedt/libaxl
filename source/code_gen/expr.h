@@ -57,6 +57,11 @@ struct expr {
 inline
 void codegen(cg_context* context, expr e) {
 	switch(e.id) {
+		case expr_id_constant:
+			//codegen(context, *(value*)e.data);
+			append(context->sb, to_string(context->arena, *(value*)e.data));
+			break;
+
 		case expr_id_variable:
 			codegen(context, *(variable*)e.data, false);
 			break;

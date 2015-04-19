@@ -2,6 +2,7 @@
 #ifndef LIBAXL_STATEMENT_GUARD
 #define LIBAXL_STATEMENT_GUARD
 
+#include "variable.h"
 #include "expr.h"
 
 namespace libaxl {
@@ -77,6 +78,9 @@ statement make_scope_statement(arena* arena, int statement_count) {
 	scope_ptr->statement_count = statement_count;
 	scope_ptr->statements = allocate<statement>(arena, statement_count);
 
+	for(int32_t i = 0; i < statement_count; ++i)
+		scope_ptr->statements[i].id = statement_id_void;
+
 	return result;
 }
 
@@ -95,6 +99,13 @@ void codegen(cg_context* context, statement s) {
 		case statement_id_return:
 		append(sb, "return ");
 		codegen(context, ((expr*)s.data)[0]);
+		append(sb, ";");
+		break;
+
+		case statement_id_decl_assign_var:
+		codegen(context, ((decl_assign_pair*)s.data)->var, true);
+		append(sb, " = ");
+		codegen(context, ((decl_assign_pair*)s.data)->e);
 		append(sb, ";");
 		break;
 

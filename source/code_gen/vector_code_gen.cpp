@@ -229,14 +229,27 @@ void vector_codegen(vector_cg_settings settings) {
 	}
 
 	{
+		variable i_var;
+		i_var.type = make_type("i32", type_info_i32);
+		i_var.name = "i";
+
+		statement i_decl = make_statement(&arena, statement_id_decl_assign_var);
+		((decl_assign_pair*)i_decl.data)->var = i_var;
+		((decl_assign_pair*)i_decl.data)->e = constant(&arena, make_i32_value(&arena, 0));
+
+		f_add.statements[0] = i_decl;
+
 		variable a1 = f_add_header.parameters[1];
 		variable a2 = f_add_header.parameters[2];
 		variable r = f_add_header.parameters[0];
-		f_add.statements[0] = make_statement(&arena, statement_id_assignment);
-		((expr*)f_add.statements[0].data)[0] =
+
+		statement add_statement = make_statement(&arena, statement_id_assignment);
+		((expr*)add_statement.data)[0] =
 		    dereference_expression(&arena, variable_expression(&arena, r));
-		((expr*)f_add.statements[0].data)[1] =
+		((expr*)add_statement.data)[1] =
 		    dereference_expression(&arena, variable_expression(&arena, a1)) + dereference_expression(&arena, variable_expression(&arena, a2));
+		
+		f_add.statements[1] = add_statement;
 	}
 
 	codegen(&context, f_add);
