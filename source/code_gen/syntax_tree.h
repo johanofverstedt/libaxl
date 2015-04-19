@@ -9,85 +9,88 @@
 namespace libaxl {
 using tree_index = int;
 
-struct syntax_node {
+struct node {
 	int id;
-	int children;
-	tree_index size;
-	tree_index sub_tree_size;
+	int param[3];
 };
 
 inline
-syntax_node make_syntax_node(int id) {
-	syntax_node result;
+node make_node(int id, int param1 = 0, int param2 = 0, int param3 = 0) {
+	node result;
 
 	result.id = id;
-	result.children = 0;
-	result.size = sizeof(syntax_node);
-	result.sub_tree_size = 0;
+	result.param[0] = param1;
+	result.param[1] = param2;
+	result.param[2] = param3;
 
 	return result;
 }
 
-struct syntax_tree_iterator {
-	syntax_tree* tree;
-	tree_index index;
-	tree_index level;
-	tree_index stack[256];
-};
-
 struct syntax_tree {
-	unsigned char* memory;
+	node* nodes;
 	tree_index used;
 	tree_index capacity;
 };
 
 inline
-tree_index length(syntax_tree t) {
-	return t.used;
+syntax_tree make_syntax_tree(arena* arena, tree_index capacity) {
+	syntax_tree result;
+
+	result.nodes = allocate<node>(arena, capacity);
+	result.used = 0;
+	result.capacity = capacity;
+
+	return result;
 }
 
 inline
-tree_index free_capacity(syntax_tree t) {
-	return t.capacity - t.used;
+tree_index length(syntax_tree* t) {
+	return t->used;
 }
 
 inline
-tree_index align_index(unsigned char* ptr, tree_index index, size_t alignment) {
-	assert(alignment & (alignment - 1) == 0); // require alignment to be a power of 2
-
-	size_t a = ((size_t)ptr) + (size_t)index;
-	size_t r = a & (alignment - 1);
-
-	if(r == 0)
-		return index;
-	return index + (tree_index)(alignment - r);
+tree_index free_capacity(syntax_tree* t) {
+	return t->capacity - t->used;
 }
 
 inline
-tree_index append(syntax_tree* t, int id) {
-	assert (free_capacity(*t) >= sizeof(syntax_node));
+tree_index node_index(syntax_tree* t, node* n) {
+	tree_index result;
 
-	tree_index insert_index = align_index(t->memory, t->used, 8U);
-
-	syntax_node* cur = (syntax_node*)(t->memory + insert_index);
-
-	*cur = make_syntax_node(id);
-
-	t->used = insert_index + sizeof(syntax_node);
-
-	return old_used;
+	result = n - t->memory;
 }
 
-template <typename T>
-T* get_tree_node(syntax_tree *t, tree_index index) {
-	index = align_index(t->memory, t->used, 8U);
-
-	return (T*)(t->memory + index);
+inline
+node* node_from_index(syntax_tree *t, tree_index index) {
+	return t->nodes[index];
 }
 
-struct syntax_tree_writer {
+inline
+node* append(syntax_tree* t, int id) {
+	assert (free_capacity(*t) > 0);
 
-};
+	tree_index insert_index = t->used;
+
+	node* cur = (syntax_node*)(t->nodes + insert_index);
+	*cur = make_node(id);
+	t->used = insert_index + 1;
+
+	return &t->nodes[insert_index];
+}
+
+inline
+tree_index append(syntax_tree* t, node* n) {
+	assert (free_capacity(*t) > 0);
+
+	tree_index insert_index = t->used;
+
+	t->nodes[insert_index] = *n;
+	t->used = insert_index + 1;
+
+	return insert_index;
+}
+
+
 }
 
 #endif
