@@ -82,6 +82,14 @@ size_t symbol_hash(const char* s) {
 }
 
 inline
+symbol get_symbol(symbol_table* t, int index) {
+	assert(index >= 0 && index < t->used);
+	assert(t->elem[index].name != nullptr);
+
+	return t->elem[index];
+}
+
+inline
 symbol_search_result find_symbol(symbol_table* t, symbol s) {
 	symbol_search_result result;
 
