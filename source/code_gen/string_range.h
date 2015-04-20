@@ -8,17 +8,17 @@
 namespace libaxl {
 	struct string_range {
 		const char* first;
-		size_t length;
+		u32 length;
 	};
 
 	inline
-	size_t length(string_range s) {
+	u32 length(string_range s) {
 		return s.length;
 	}
 
 	inline
-	size_t to_c_string(string_range s, char* out, size_t max_length) {
-		size_t initial_max_length = max_length;
+	u32 to_c_string(string_range s, char* out, u32 max_length) {
+		u32 initial_max_length = max_length;
 		while(max_length > 1 && s.length > 0) {
 			*out = *s.first;
 
@@ -37,20 +37,20 @@ namespace libaxl {
 	void append(string_buffer& sb, string_range s) {
 		assert(s.length <= 2147483647U);
 
-		append(sb, s.first, (int)s.length);
+		append(sb, s.first, (i32)s.length);
 	}
 
 	inline
 	void print(string_range s) {
 		char tmp[64];
-		size_t i = 0;
+		u32 i = 0;
 
 		for(; i < s.length; i += 63U) {
-			size_t chunk_length = s.length - i;
+			u32 chunk_length = s.length - i;
 			if(chunk_length > 63U)
 				chunk_length = 63U;
 
-			memcpy(tmp, s.first + i, chunk_length);
+			memcpy(tmp, s.first + i, (size_t)chunk_length);
 			tmp[chunk_length] = '\0';
 
 			printf("%s", tmp);
