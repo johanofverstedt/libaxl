@@ -7,6 +7,9 @@
 
 #include "string.h"
 
+#define LIBAXL_ILLEGAL_INDEX_64 18446744073709551615
+
+namespace libaxl {
 struct symbol {
 	const char* name;
 	size_t length;
@@ -35,17 +38,17 @@ bool operator!=(symbol s1, symbol s2) {
 
 struct symbol_table {
 	symbol* elem;
-	int size;
-	int used;
+	u64 size;
+	u64 used;
 };
 
 struct symbol_search_result {
-	int index;
+	u64 index;
 	bool was_found;
 };
 
 inline
-symbol_table make_symbol_table(arena* arena, int size) {
+symbol_table make_symbol_table(arena* arena, u64 size) {
 	symbol_table result;
 
 	result.elem = allocate<symbol>(arena, size);
@@ -73,16 +76,16 @@ size_t symbol_hash(const char* s, size_t slen) {
 
 inline
 size_t symbol_hash(const char* s) {
-	int result;
+	u64 result;
 	size_t slen = strlen(s);
 
-	result = symbol_hash(s, slen);
+	result = (u64)symbol_hash(s, slen);
 
 	return result;
 }
 
 inline
-symbol get_symbol(symbol_table* t, int index) {
+symbol get_symbol(symbol_table* t, u64 index) {
 	assert(index >= 0 && index < t->used);
 	assert(t->elem[index].name != nullptr);
 
@@ -93,16 +96,15 @@ inline
 symbol_search_result find_symbol(symbol_table* t, symbol s) {
 	symbol_search_result result;
 
-	result.index = -1;
+	result.index = LIBAXL_INVALID_INDEX_64;
 	result.was_found = false;
 
-	int t_size = t->size;
+	auto t_size = t->size;
 	symbol* elem = t->elem;
 
-	size_t raw_hash = symbol_hash(s, slen) % (size_t)t_size;
-	int hash = (int)raw_hash;
+	size_t hash = symbol_hash(s, slen) % (size_t)t_size;
 
-	for(int i = hash; i < t_size; ++i) {
+	for(u64 i = hash; i < t_size; ++i) {
 		if(elem[i].name == nullptr) {
 			result.index = i;
 			return result;
@@ -115,7 +117,7 @@ symbol_search_result find_symbol(symbol_table* t, symbol s) {
 		}
 	}
 
-	for(int i = 0; i < hash; ++i) {
+	for(u64 i = 0; i < hash; ++i) {
 		if(elem[i].name == nullptr) {
 			result.index = i;
 			return result;
@@ -148,8 +150,8 @@ symbol_search_result find_symbol(symbol_table* t, const char* s) {
 }
 
 inline
-int add_symbol(symbol_table* t, symbol s) {
-	int result;
+u64 add_symbol(symbol_table* t, symbol s) {
+	u64 result;
 
 	int t_size = t->size;
 	symbol* elem = t->elem;
@@ -169,8 +171,8 @@ int add_symbol(symbol_table* t, symbol s) {
 }
 
 inline
-int add_symbol(symbol_table* t, const char* s) {
-	int result;
+u64 add_symbol(symbol_table* t, const char* s) {
+	u64 result;
 
 	size_t slen = strlen(s);
 
@@ -182,6 +184,7 @@ int add_symbol(symbol_table* t, const char* s) {
 	result = add_symbol(t, new_symbol);
 
 	return result;
+}
 }
 
 #endif

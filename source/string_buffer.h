@@ -4,7 +4,7 @@
 
 #include "util.h"
 #include "arena.h"
-#include "strings.h"
+//#include "strings.h"
 
 namespace libaxl {
 struct string_buffer {
@@ -91,7 +91,7 @@ string_buffer& append(string_buffer& buf, const char* str, int length) {
 		space(buf, length - appended_length);
 	}
 }
-
+/*
 inline
 string_buffer& append(string_buffer& buf, const_string str) {
 	int slen = length(str);
@@ -103,7 +103,7 @@ string_buffer& append(string_buffer& buf, const_string str) {
 
 	return buf;
 }
-
+*/
 inline
 void print(string_buffer& buf) {
 	buf.memory[buf.used] = '\0';
