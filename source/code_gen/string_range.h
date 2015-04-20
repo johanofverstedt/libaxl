@@ -6,18 +6,18 @@
 #include "stdio.h"
 
 namespace libaxl {
-	struct string {
+	struct string_range {
 		const char* first;
 		size_t length;
 	};
 
 	inline
-	size_t length(string s) {
+	size_t length(string_range s) {
 		return s.length;
 	}
 
 	inline
-	size_t to_c_string(string s, char* out, size_t max_length) {
+	size_t to_c_string(string_range s, char* out, size_t max_length) {
 		size_t initial_max_length = max_length;
 		while(max_length > 1 && s.length > 0) {
 			*out = *s.first;
@@ -34,14 +34,14 @@ namespace libaxl {
 	}
 
 	inline
-	void append(string_buffer& sb, string s) {
+	void append(string_buffer& sb, string_range s) {
 		assert(s.length <= 2147483647U);
 
 		append(sb, s.first, (int)s.length);
 	}
 
 	inline
-	void print(string s) {
+	void print(string_range s) {
 		char tmp[64];
 		size_t i = 0;
 
