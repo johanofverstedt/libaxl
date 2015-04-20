@@ -14,6 +14,12 @@ struct node {
 	int param[3];
 };
 
+struct syntax_tree {
+	node* nodes;
+	tree_index used;
+	tree_index capacity;
+};
+
 inline
 node make_node(int id, int param1 = 0, int param2 = 0, int param3 = 0) {
 	node result;
@@ -25,12 +31,6 @@ node make_node(int id, int param1 = 0, int param2 = 0, int param3 = 0) {
 
 	return result;
 }
-
-struct syntax_tree {
-	node* nodes;
-	tree_index used;
-	tree_index capacity;
-};
 
 inline
 syntax_tree make_syntax_tree(arena* arena, tree_index capacity) {
@@ -66,7 +66,7 @@ node* node_from_index(syntax_tree *t, tree_index index) {
 }
 
 inline
-node* append(syntax_tree* t, int id) {
+node* push(syntax_tree* t, int id) {
 	assert (free_capacity(*t) > 0);
 
 	tree_index insert_index = t->used;
@@ -79,7 +79,7 @@ node* append(syntax_tree* t, int id) {
 }
 
 inline
-tree_index append(syntax_tree* t, node* n) {
+tree_index push(syntax_tree* t, node* n) {
 	assert (free_capacity(*t) > 0);
 
 	tree_index insert_index = t->used;
