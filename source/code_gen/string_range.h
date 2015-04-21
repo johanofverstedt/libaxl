@@ -8,7 +8,7 @@
 namespace libaxl {
 	struct string_range {
 		const char* first;
-		u32 length;
+		u32 length; //Should change to size_t
 	};
 
 	inline
