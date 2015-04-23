@@ -6,11 +6,29 @@
 #include "../util.h"
 #include "../arena.h"
 
-#define LIBAXL_LAST_BIT_COUNT(T) (sizeof(syntax_tree_value) * 8 - 1)
+#define LIBAXL_LAST_BIT_COUNT(T) (sizeof(T) * 8 - 1)
 
 namespace libaxl {
 using syntax_tree_index = u64;
-using syntax_tree_value = u32;
+//using syntax_tree_value = u32;
+
+struct type_value {
+	u32 indirection_level;
+	u32 index;
+};
+
+struct source_location {
+	u32 line;
+	u32 col;
+};
+
+struct syntax_tree_value {
+	u32             id;
+	u32             name_index;
+	type_value      type;
+	source_location loc;
+	u64             sub_tree_size;
+};
 
 struct syntax_tree {
 	syntax_tree_value* memory;
