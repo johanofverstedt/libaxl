@@ -4,6 +4,70 @@
 //  node_id: i32 | name: u32 | type: u32, u32 | source_pos: u32, u32
 //
 
+template vector_t[V, ?FIXED[SIZE], ?REVERSE] {
+	struct vector {
+		data: V*;
+		def count = 256;
+	};
+
+	struct reverse_vector {
+		data: V*;
+		def count = 256;
+	};
+
+	struct strided_vector {
+		data: V*;
+		def count = 256;
+		stride: i32;
+	};	
+}
+
+import vector_t[double, FIXED[256], REVERSE] as vd256;
+
+++{a + b};
+
+def linear_add(a, b, g) = {a + b * g};
+
+e := linear_add(x, y, g);
+r := deref linear_add(x, y, 2.0)
+
+++(a + b) <=> {
+    ++a;
+    ++b;
+}
+
+*(a + b) <=> (*a + *b)
+(a + b)[i] <=> (a[i] + b[i])
+a: ref[double]
+
+def add[T](x: T*, y: ref[T], out: ref[T])
+x + 5
+deref[2](x)
+
+def e = vexpr((a + b) * c + d); ref(d)
+e[0]
+e{0, 2}
+vexpr ve = (a + b) * c + d;
+
+vdef ve = (a + b) * c + d;
+vdef ve2 = v2 * v2;
+
+x := load[double, 16](ptr)
+for[8] x in ve2 {
+	
+}
+
+tmp := vexpr(a + b * reverse(c), arena);
+tmp2 := (ve2, arena);
+
+vdef le = a - b;
+??le[0] <=> ??(a[0] - b[0])
+
+load_v2(ve2) <=> 
+
+e[0] <=> (a[0] + b[0]) * c[0] + d[0]
+$e <=> ($a + $b) * $c + $d
+
 def vector_eval(rhs: <expr>, arena* arena) -> [value_type(rhs)] {
 	result: [value_type[rhs]] = alloc[value_type[rhs]](arena, length(rhs));
 
