@@ -110,7 +110,8 @@ u64 add_string(string_table* t, const char* string, u32 string_length) {
 	cur = &t->entries[outer_index];
 	while(cur->start_index != 0) {
 		if(strcmp(t->str + cur->start_index, string) == 0) {
-			return inner_index;
+			return cur->start_index;
+			//return inner_index;
 		}
 
 		++inner_index;
@@ -138,6 +139,8 @@ u64 add_string(string_table* t, const char* string, u32 string_length) {
 	return result;
 }
 
+/*
+
 inline
 const char* get_string(string_table* t, u64 index) {
 	u32 outer_index = (u32)(index >> 32);
@@ -154,7 +157,7 @@ const char* get_string(string_table* t, u64 index) {
 
 	return t->str + cur->start_index;
 }
-
+*/
 }
 
 #endif
