@@ -16,10 +16,31 @@ u32 table_sizes[] = {
 	201326611, 402653189, 805306457, 1610612741
 };
 
+inline
+u32 hash_from_string(const char* string, u32 string_length) {
+	u64 hc = FMV_OFFSET;
+	unsigned char* hc_char_ptr = (unsigned char*)&hc;
+	for(u32 i = 0; i < string_length; ++i) {
+		hc *= FMV_PRIME;
+		(*hc_char_ptr) ^= (unsigned char)string[i];
+	}
+    return (u32)hc;
+}
+
 struct table_entry {
 	table_entry* next;
 	u32 start_index;
 	u32 hash;
+};
+
+struct string_info {
+	u32 length;
+	u32 hash;
+};
+
+struct string_ref {
+	const char* ptr;
+	string_info info;
 };
 
 struct string_table {
@@ -32,6 +53,28 @@ struct string_table {
 	table_entry* entries;
 	u32 entry_count;
 };
+
+inline
+string_info make_string_info(const char* str, u32 length) {
+	string_info result;
+
+	result.length = length;
+	result.hash = hash_from_string(str, length);
+
+	return result;
+}
+
+inline
+string_info make_string_info(const char* str) {
+	string_info result;
+	size_t len = strlen(str);
+
+	assert(len <= 4294967295U);
+
+	result = make_string_info(str, (u32)len);
+
+	return result;
+}
 
 inline
 u32 next_suitable_size(u32 requested_size) {
@@ -51,7 +94,7 @@ string_table make_string_table(u32 string_buffer_length, u32 hash_table_length) 
 	string_table result;
 
 	result.str = (char*)malloc(string_buffer_length);
-	result.used = 1;
+	result.used = 0;
 	result.capacity = string_buffer_length;
 
 	result.str[0] = '\0';
@@ -89,14 +132,32 @@ void free_string_table(string_table* t) {
 }
 
 inline
-u32 hash_from_string(const char* string, u32 string_length) {
-	u64 hc = FMV_OFFSET;
-	unsigned char* hc_char_ptr = (unsigned char*)&hc;
-	for(u32 i = 0; i < string_length; ++i) {
-		hc *= FMV_PRIME;
-		(*hc_char_ptr) ^= (unsigned char)string[i];
-	}
-    return (u32)hc;
+u32 push_string(string_table* t, string_ref s) {
+	u32 old_used = t->used;
+
+	u32 new_used = old_used + string_length + sizeof(string_info) + 1;
+	assert(new_used <= t->capacity); //TODO: Handle enlargements
+
+	char* buf = t->str + old_used;
+
+	memcpy(buf, &s.info, sizeof(string_info));
+	buf += sizeof(string_info);
+	memcpy(buf, s.ptr, s.info.length);
+	buf[s.info.length] = '\0';
+
+	t->used = new_used;
+
+	return old_used + sizeof(string_info);
+}
+
+inline
+string_ref get_string(string_table* t, u32 index) {
+	string_ref result;
+
+	result.ptr = t->str + index;
+	memcpy(&result.info, t->str - sizeof(string_info), sizeof(string_info));
+
+	return result;
 }
 
 inline
