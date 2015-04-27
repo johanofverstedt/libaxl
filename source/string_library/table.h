@@ -1,9 +1,10 @@
 
-#ifndef STRING_TABLE_GUARD
-#define STRING_TABLE_GUARD
+#ifndef STRING_LIBRARY_STRING_TABLE_GUARD
+#define STRING_LIBRARY_STRING_TABLE_GUARD
 
-#include "../util.h"
-#include "../arena.h"
+#include "string_ref.h"
+
+namespace string_table {
 
 #define FMV_OFFSET 14695981039346656037ULL
 #define FMV_PRIME 1099511628211ULL
@@ -291,7 +292,7 @@ const char* get_string(string_table* t, u64 index) {
 
 	return t->str + cur->start_index;
 }
-*/
+*/	
 }
 
 #endif
