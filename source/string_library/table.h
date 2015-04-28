@@ -1,4 +1,26 @@
 
+// string_table api:
+//
+// ---
+// string_table make_string_table(u32 string_buffer_length, u32 hash_table_length)
+//
+// constructs a string table with at least the specified sizes
+// (return): a new string table with memory allocated via malloc
+// ---
+// str get_string(string_table* t, u32 index)
+//
+// returns the string located at the specified index
+// (precondition):  t is a valid string_table.
+// (precondition):  index is a previously returned value from add_string function,
+//     for the same table t.
+// (postcondition): t is not mutated
+// (return):        a hashed and counted string of type 'str'.
+// ---
+// u32 add_string(string_table* t, str s)
+//
+// adds hash and counted string s to the table if it doesn't reside in the
+// table already. 
+
 #ifndef STRING_LIBRARY_STRING_TABLE_GUARD
 #define STRING_LIBRARY_STRING_TABLE_GUARD
 
