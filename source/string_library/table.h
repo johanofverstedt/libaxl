@@ -29,19 +29,6 @@ struct string_table {
 };
 
 inline
-str make_string_ref_from_string_table(cstring buffer, u32 used, u32 index) {
-	str result;
-	cstring indexed_buffer = (buffer + index);
-
-	str_info info;
-	memcpy(&info, indexed_buffer - (u32)sizeof(string_info), sizeof(string_info));
-
-	result = make_string(indexed_buffer, info);
-
-	return result;
-}
-
-inline
 u32 next_suitable_size(u32 requested_size) {
 	u32 len = sizeof(table_sizes) / sizeof(table_sizes[0]);
 	u32 len_1 = len - 1;
@@ -106,8 +93,10 @@ str get_string(string_table* t, u32 index) {
 
 	byte_ptr src = t->str_buf.ptr + index;
 
-	result.ptr = t->str_buf.ptr + index;
-	memcpy(&result.info, src - sizeof(str_info), sizeof(str_info));
+	str_info info;
+	memcpy(&info, src - sizeof(str_info), sizeof(str_info));
+
+	result = make_string(src, info);
 
 	return result;
 }
