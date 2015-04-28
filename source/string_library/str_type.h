@@ -3,11 +3,11 @@
  *
  *  str_type.h
  *
- *  the string primitive in this library is a string reference type (string_ref)
+ *  the string primitive in this library is a string reference type (str)
  *  which either contains the string itself if it's as short as the
  *  size of a pointer or a pointer to the string itself, located in memory.
  *
- *  since the string_ref type is a fat pointer type it will not be suitable for
+ *  since the str type is a very fat pointer type it will not be suitable for
  *  every need, but designed for safety, easy comparisons and
  *  compatibility with a large hashed string table for unique storage
  *  of strings that may occur repeatedly such as in a program text.
@@ -64,9 +64,8 @@ str make_string(cstring s, str_info info) {
 	str result;
 
 	result.info = info;
-	if(info.length < sizeof(cstring)) {
+	if(info.length <= sizeof(cstring)) {
 		memcpy(result.sso_buf, s, info.length);
-		result.sso_buf[info.length] = '\0';
 	} else {
 		result.ptr = s;
 	}
@@ -102,13 +101,11 @@ inline
 cstring string_to_cstring(str s) {
 	cstring result;
 
-	if(s.info.length < sizeof(cstring)) {
-		result = &s.sso_buf[0];
+	if(s.info.length <= sizeof(cstring)) {
+		result = (cstring)s.sso_buf;
 	} else {
 		result = s.ptr;
 	}
-
-	assert(result[s.info.length] == '\0');
 
 	return result;	
 }
@@ -120,40 +117,19 @@ cstring string_to_cstring(str s, u32 index) {
 	assert(index <= s.info.length);
 
 	if(s.info.length < sizeof(cstring)) {
-		result = &s.sso_buf[index];
+		result = (cstring)s.sso_buf + index;
 	} else {
 		result = s.ptr + index;
 	}
 
-	assert(result[s.info.length - index] == '\0');
-
 	return result;	
-}
-
-inline
-u32 read_string(str s, u32 index, mutable_cstring out, u32 out_size) {
-	u32 read_count;
-
-	assert(out_size > 0);
-
-	cstring in_ptr = string_to_cstring(s, index);
-
-	read_count = (s.info.length + 1) - index;
-	if(read_count > out_size) {
-		read_count = out_size - 1;
-		out[out_size - 1] = '\0';
-	}
-
-	memcpy(out, in_ptr, read_count);
-
-	return read_count;
 }
 
 inline
 void print(str s) {
 	cstring ptr = string_to_cstring(s);
 
-	printf("%s", ptr);	
+	fwrite(ptr, sizeof(char), s.info.length, stdout);
 }
 
 inline

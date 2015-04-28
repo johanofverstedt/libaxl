@@ -2,12 +2,10 @@
 #ifndef STRING_LIBRARY_STRING_TABLE_GUARD
 #define STRING_LIBRARY_STRING_TABLE_GUARD
 
-#include "string_ref.h"
+#include "str_type.h"
+#include "stack.h"
 
 namespace string_table {
-
-#define FMV_OFFSET 14695981039346656037ULL
-#define FMV_PRIME 1099511628211ULL
 
 namespace libaxl {
 // suggested in:
@@ -18,70 +16,19 @@ u32 HASH_TABLE_SIZES[] = {
 	201326611, 402653189, 805306457, 1610612741
 };
 
-inline
-u32 hash_u32_from_string(const char* string, u32 string_length) {
-	u64 hc = FMV_OFFSET;
-	unsigned char* hc_char_ptr = (unsigned char*)&hc;
-	for(u32 i = 0; i < string_length; ++i) {
-		hc *= FMV_PRIME;
-		(*hc_char_ptr) ^= (unsigned char)string[i];
-	}
-    return (u32)hc;
-}
-
-//
-//  string reference type
-//  supports the small string optimization
-//  i.e. when the string size (including terminating '\0')
-//  is <= than the size of ptr, the string is contained
-//  in the string_ref object.
-//
-
-struct string_info {
-	u32 length;
+struct table_entry {
+	u32 index;
 	u32 hash;
 };
 
-struct string_ref {
-	string_info info;
-	union {
-		const char* ptr;
-		char str[sizeof(const char*)];
-	};
-};
-
 struct string_table {
-	char* str;
-	u32 used;
-	u32 capacity;
+	stack str_buf;
 
 	// associative index
 
-	u32* index_table;
-	u32 table_size;
+	table_entry* entries;
+	u32 entry_count;
 };
-
-inline
-string_info make_string_info(const char* str, u32 length) {
-	string_info result;
-
-	result.length = length;
-	result.hash = hash_u32_from_string(str, length);
-
-	return result;
-}
-
-inline
-string_info make_string_info(const char* str) {
-	string_info result;
-	size_t len = strlen(str);
-
-	assert(len <= 4294967295U);
-
-	result = make_string_info(str, (u32)len);
-
-	return result;
-}
 
 //
 //  function that verifies that a valid string exists at position index
@@ -112,7 +59,7 @@ bool validate_string_at_index(const char* buffer, u32 size, u32 index) {
 	}
 	
 	// verify that the string hash matches the recorded hash
-	u32 hash = hash_u32_from_string(buffer + index, info.length);
+	u32 hash = hash_u32(buffer + index, info.length);
 	if(hash != info.hash) {
 		result = false;
 		return result;
@@ -155,6 +102,8 @@ u32 next_suitable_size(u32 requested_size) {
 	u32 len = sizeof(table_sizes) / sizeof(table_sizes[0]);
 	u32 len_1 = len - 1;
 
+	assert(requested_size <= table_sizes[len_1]);
+
 	for(u32 i = 0; i < len_1; ++i) {
 		if(requested_size <= table_sizes[i])
 			return table_sizes[i];
@@ -167,18 +116,12 @@ inline
 string_table make_string_table(u32 string_buffer_length, u32 hash_table_length) {
 	string_table result;
 
-	result.str = (char*)malloc(string_buffer_length);
-	result.used = 0;
-	result.capacity = string_buffer_length;
+	result.str_buf = make_stack(malloc(string_buffer_length), string_buffer_length);
 
-	result.str[0] = '\0';
+	result.entry_count = next_suitable_size(hash_table_length);
+	result.entries = (table_entry*)malloc(result.entry_count * sizeof(table_entry));
 
-	hash_table_length = next_suitable_size(hash_table_length);
-
-	result.entries = (table_entry*)malloc(hash_table_length * sizeof(table_entry));
-	result.entry_count = hash_table_length;
-
-	memset(entries, 0, hash_table_length * sizeof(table_entry));
+	memset(result.entries, 0, result.entry_count * sizeof(table_entry));
 
 	return result;
 }
@@ -187,19 +130,13 @@ inline
 void free_string_table(string_table* t) {
 	u32 entry_count = t->entry_count;
 
-	for(u32 i = 0; i < entry_count; ++i) {
-		table_entry* cur = t->entries[i]->next;
-		while(cur) {
-			table_entry* prev = cur;
-			cur = cur->next;
-			free(prev);
-		}
-	}
-
-	free(t->str);
+	free(t->str_buf.ptr);
 	free(t->entries);
 
-	t->used = 0;
+	t->str_buf.ptr = nullptr;
+	t->entries = nullptr;
+
+	t->top = 0;
 	t->capacity = 0;
 	t->entries = 0;
 	t->entry_count = 0;

@@ -15,6 +15,17 @@ struct stack {
 };
 
 inline
+stack make_stack(byte_ptr ptr, u32 capacity) {
+	stack result;
+
+	result.ptr = ptr;
+	result.top = 0U;
+	result.capacity = capacity;
+
+	return result;
+}
+
+inline
 u32 push(stack* s) {
 	u32 result;
 
