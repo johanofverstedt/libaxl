@@ -26,7 +26,6 @@
 #include "hash.h"
 
 namespace string_library {
-
 struct str_info {
 	u32 length;
 	u32 hash;
@@ -93,6 +92,20 @@ str make_string(cstring s) {
 	info = make_str_info(s);
 
 	result = make_string(s, info);
+
+	return result;
+}
+
+inline
+u32 length(str s) {
+	u32 result = s.info.length;
+
+	return result;
+}
+
+inline
+u32 hash(str s) {
+	u32 result = s.info.hash;
 
 	return result;
 }

@@ -26,6 +26,17 @@ stack make_stack(byte_ptr ptr, u32 capacity) {
 }
 
 inline
+byte_ptr stack_ptr(stack* s, u32 index) {
+	byte_ptr result;
+
+	assert(s != nullptr);
+	assert(s->ptr != nullptr);
+	assert(s->top >= index);
+	
+	return s->ptr + index;
+}
+
+inline
 u32 push(stack* s) {
 	u32 result;
 
@@ -72,7 +83,7 @@ u32 push(stack* s, T* ptr, u32 count) {
 
 	memcpy(s->ptr + result, ptr, count * sizeof(T));
 
-	s->top = result + count;
+	s->top = result + count * sizeof(T);
 
 	return result;
 }

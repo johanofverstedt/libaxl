@@ -5,9 +5,7 @@
 #include "str_type.h"
 #include "stack.h"
 
-namespace string_table {
-
-namespace libaxl {
+namespace string_library {
 // suggested in:
 // http://www.orcca.on.ca/~yxie/courses/cs2210b-2011/htmls/extra/PlanetMath_%20goodhashtable.pdf
 u32 HASH_TABLE_SIZES[] = {
@@ -30,69 +28,15 @@ struct string_table {
 	u32 entry_count;
 };
 
-//
-//  function that verifies that a valid string exists at position index
-//  in the specified buffer.
-//
-//  performance warning: this verification function is very expensive
-//  and should only be enabled in the slowest debug builds.
-//
 inline
-bool validate_string_at_index(const char* buffer, u32 size, u32 index) {
-	bool result = true;
+str make_string_ref_from_string_table(cstring buffer, u32 used, u32 index) {
+	str result;
+	cstring indexed_buffer = (buffer + index);
 
-	// verify that the string is not "null" (0 index) or overflows the size of the buffer
-	if(index == 0U || index >= size) {
-		result = false;
-		return result;
-	}
+	str_info info;
+	memcpy(&info, indexed_buffer - (u32)sizeof(string_info), sizeof(string_info));
 
-	// read the string_info structure from the buffer
-	string_info info;
-	memcpy(&info, buffer + index - sizeof(string_info), sizeof(string_info));
-
-	// verify that the end of the string does not overflow the size of the buffer
-	u64 end_index = (u64)index + (u64)info.length + 1ULL;
-	if(end_index >= (u64)size) {
-		result = false;
-		return result;
-	}
-	
-	// verify that the string hash matches the recorded hash
-	u32 hash = hash_u32(buffer + index, info.length);
-	if(hash != info.hash) {
-		result = false;
-		return result;
-	}
-
-	// verify that the string is null-terminated at the correct position
-	if(buffer[index + info.length] != '\0') {
-		result = false;
-		return result;
-	}
-
-	return result;
-}
-
-inline
-string_ref make_string_ref_from_string_table(const char* buffer, u32 used, u32 index) {
-	string_ref result;
-	const char* str = buffer + index;
-
-	assert(buffer != 0);
-	assert(index >= (u32)sizeof(string_info));
-
-	//performance warning: very expensive assert
-	assert(validate_string_at_index(buffer, used, index));
-
-	memcpy(&result.info, str - (u32)sizeof(string_info), sizeof(string_info));
-
-	if(result.info.length < sizeof(const char*)) { // embed string in ref
-		memcpy(result.str, buffer, result.info.length);
-		result.str[result.info.length] = '\0';
-	} else {
-		result.ptr = buffer + index;
-	}
+	result = make_string(indexed_buffer, info);
 
 	return result;
 }
@@ -143,93 +87,83 @@ void free_string_table(string_table* t) {
 }
 
 inline
-u32 push_string(string_table* t, string_ref s) {
-	u32 old_used = t->used;
+u32 push_string(string_table* t, str s) {
+	u32 result;
 
-	u32 new_used = old_used + string_length + sizeof(string_info) + 1;
-	assert(new_used <= t->capacity); //TODO: Handle enlargements
-
-	char* buf = t->str + old_used;
-
-	memcpy(buf, &s.info, sizeof(string_info));
-	buf += sizeof(string_info);
-	memcpy(buf, s.ptr, s.info.length);
-	buf[s.info.length] = '\0';
-
-	t->used = new_used;
-
-	return old_used + sizeof(string_info);
-}
-
-inline
-string_ref get_string(string_table* t, u32 index) {
-	string_ref result;
-
-	result.ptr = t->str + index;
-	memcpy(&result.info, t->str - sizeof(string_info), sizeof(string_info));
+	push(&t->str_buf, &s.info, sizeof(str_info));
+	
+	cstring src = string_to_cstring(s);
+	result = push(&t->str_buf, src, length(s));
 
 	return result;
 }
 
 inline
-u64 add_string(string_table* t, const char* string, u32 string_length) {
-	u32 hash = hash_from_string(string, string_length);
-	u32 old_used = t->used;
-	u32 outer_index = hash % t->entry_count;
-	u32 inner_index = 0U;
+str get_string(string_table* t, u32 index) {
+	str result;
 
-	table_entry* cur;
-	cur = &t->entries[outer_index];
-	while(cur->start_index != 0) {
-		if(strcmp(t->str + cur->start_index, string) == 0) {
-			return cur->start_index;
-			//return inner_index;
-		}
+	assert(index >= sizeof(str_info));
 
-		++inner_index;
+	byte_ptr src = t->str_buf.ptr + index;
 
-		if(cur->next == 0) {
-			cur->next = malloc(table_entry * sizeof(table_entry));
-			memset(cur->next, 0, sizeof(table_entry));
-		}
+	result.ptr = t->str_buf.ptr + index;
+	memcpy(&result.info, src - sizeof(str_info), sizeof(str_info));
 
-		cur = cur->next;
-	}
-
-	// string was not found. add it to the table
-	{
-		u32 new_used = old_used + string_length + 1;
-		assert(new_used <= t->capacity); //TODO: Handle enlargements
-
-		memcpy(t->str + old_used, string, string_length + 1);
-		t->used = new_used;
-
-		cur->start_index = old_used;
-	}
-
-	u64 result = ((u64)outer_index << 32) | ((u64)inner_index);
 	return result;
 }
 
-/*
-
 inline
-const char* get_string(string_table* t, u64 index) {
-	u32 outer_index = (u32)(index >> 32);
-	u32 inner_index = (u32)(index & 4294967295U);
+u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle, u32 hash_value) {
+	u32 result = 0U; //default to no match
 
-	table_entry* cur = &t->entries[outer_index];
-	while(inner_index) {
-		assert(cur->next != 0);
-		++inner_index;
-		cur = cur->next;
+	u32 entry_index = entry->index;
+	u32 entry_hash = entry->hash;
+
+	if(entry_index != 0U) {
+		// compare contents
+		if(hash_value == entry_hash) {
+			str_info info;
+
+			byte_ptr ptr = stack_ptr(haystack, entry_index); 
+			memcpy(&info, ptr - sizeof(str_info), sizeof(str_info));
+			
+			if(info.length == length(s)) {
+				if(memcmp(ptr, string_to_cstring(s), info.length) == 0)
+					result = entry_index; //the needle was found
+			}
+		}
+	} else {
+		// empty table entry... insert string
+		push(haystack, &needle.info, sizeof(str_info));
+	
+		cstring src = string_to_cstring(needle);
+		result = push(haystack, src, length(s));
 	}
 
-	assert(cur->start_index != 0);
-
-	return t->str + cur->start_index;
+	return result;
 }
-*/	
+
+inline
+u32 add_string(string_table* t, str s) {
+	u32 result = 0U;
+
+	stack* str_buf = t->str_buf;
+	u32 entry_count = t->entry_count;
+	table_entry* entry_array = t->entries;
+	u32 hash_value = hash(s);
+	u32 hash_index = hash_value % entry_count;
+
+	// search the first part of the table, from the hash_index and forward
+	for(u32 i = hash_index; i < entry_count && result == 0U; ++i) {
+		result = check_or_add_at_index(entry_array + i, str_buf, s, hash_value);
+	}
+	// search the second part of the table, after wrapping around to index 0
+	for(u32 i = 0; i < hash_index && result == 0U; ++i) {
+		result = check_or_add_at_index(entry_array + i, str_buf, s, hash_value);
+	}
+
+	return result;
+}
 }
 
 #endif
