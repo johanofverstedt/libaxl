@@ -26,13 +26,18 @@ stack make_stack(byte_ptr ptr, u32 capacity) {
 }
 
 inline
-byte_ptr stack_ptr(stack* s, u32 index) {
-	byte_ptr result;
+byte_ptr stack_top_ptr(stack* s) {
+	assert(s != nullptr);
+	assert(s->ptr != nullptr);
 
+	return s->ptr + s->top;	
+}
+inline
+byte_ptr stack_ptr(stack* s, u32 index) {
 	assert(s != nullptr);
 	assert(s->ptr != nullptr);
 	assert(s->top >= index);
-	
+
 	return s->ptr + index;
 }
 
@@ -82,6 +87,69 @@ u32 push(stack* s, T* ptr, u32 count) {
 	result = s->top;
 
 	memcpy(s->ptr + result, ptr, count * sizeof(T));
+
+	s->top = result + count * sizeof(T);
+
+	return result;
+}
+
+template <typename T>
+inline
+u32 push_dup(stack* s, T value, u32 count) {
+	u32 result;
+
+	// preconditions
+	assert(s != nullptr);
+	assert(s->ptr != nullptr);
+	assert(ptr != nullptr);
+	assert(s->top + sizeof(T) * count <= s->capacity);
+
+	byte_ptr ptr = s->ptr;
+	result = s->top;
+
+	for(u32 i = 0; i < count; ++i) {
+		memcpy(ptr + i * sizeof(T), &value, sizeof(T));
+	}
+
+	s->top = result + count * sizeof(T);
+
+	return result;
+}
+
+inline
+u32 push_dup(stack* s, u8 value, u32 count) {
+	u32 result;
+
+	// preconditions
+	assert(s != nullptr);
+	assert(s->ptr != nullptr);
+	assert(ptr != nullptr);
+	assert(s->top + sizeof(T) * count <= s->capacity);
+
+	byte_ptr ptr = s->ptr;
+	result = s->top;
+
+	memset(ptr, value, count * sizeof(char));
+
+	s->top = result + count * sizeof(T);
+
+	return result;
+}
+
+inline
+u32 push_dup(stack* s, i8 value, u32 count) {
+	u32 result;
+
+	// preconditions
+	assert(s != nullptr);
+	assert(s->ptr != nullptr);
+	assert(ptr != nullptr);
+	assert(s->top + sizeof(T) * count <= s->capacity);
+
+	byte_ptr ptr = s->ptr;
+	result = s->top;
+
+	memset(ptr, value, count * sizeof(char));
 
 	s->top = result + count * sizeof(T);
 

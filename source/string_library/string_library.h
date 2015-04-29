@@ -6,6 +6,7 @@
 #include "str_type.h"
 #include "hash.h"
 #include "table.h"
+#include "string_buffer.h"
 #include "transform.h"
 
 #endif
