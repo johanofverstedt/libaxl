@@ -26,6 +26,13 @@ stack make_stack(byte_ptr ptr, u32 capacity) {
 }
 
 inline
+u32 length(stack* s) {
+	u32 result = s->top;
+
+	return result;
+}
+
+inline
 byte_ptr stack_top_ptr(stack* s) {
 	assert(s != nullptr);
 	assert(s->ptr != nullptr);

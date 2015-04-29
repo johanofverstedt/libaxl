@@ -9,6 +9,20 @@ namespace string_library {
 using string_buffer = stack;
 
 inline
+str to_string(string_buffer* sb) {
+	str result;
+
+	str_info info;
+
+	info.hash = 0;
+	info.length = length(sb);
+
+	result = make_string((char*)stack_ptr(sb, 0), info);
+
+	return result;
+}
+
+inline
 void append(string_buffer* sb, str s) {
 	push(sb, string_to_cstring(s), length(s));
 }
