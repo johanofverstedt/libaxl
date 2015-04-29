@@ -124,11 +124,12 @@ str get_string(string_table* t, u32 index) {
 }
 
 inline
-u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle, u32 hash_value) {
+u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle) {
 	u32 result = 0U; //default to no match
 
 	u32 entry_index = entry->index;
 	u32 entry_hash = entry->hash;
+	u32 hash_value = hash(needle);
 
 	if(entry_index != 0U) {
 		// compare contents
@@ -149,6 +150,9 @@ u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle, u32 h
 	
 		cstring src = string_to_cstring(needle);
 		result = push(haystack, src, length(s));
+
+		entry->index = result;
+		entry->hash = hash_value;
 	}
 
 	return result;
@@ -166,11 +170,11 @@ u32 add_string(string_table* t, str s) {
 
 	// search the first part of the table, from the hash_index and forward
 	for(u32 i = hash_index; i < entry_count && result == 0U; ++i) {
-		result = check_or_add_at_index(entry_array + i, str_buf, s, hash_value);
+		result = check_or_add_at_index(entry_array + i, str_buf, s);
 	}
 	// search the second part of the table, after wrapping around to index 0
 	for(u32 i = 0; i < hash_index && result == 0U; ++i) {
-		result = check_or_add_at_index(entry_array + i, str_buf, s, hash_value);
+		result = check_or_add_at_index(entry_array + i, str_buf, s);
 	}
 
 	return result;
