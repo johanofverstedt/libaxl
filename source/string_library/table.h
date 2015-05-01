@@ -97,7 +97,7 @@ inline
 u32 push_string(string_table* t, str s) {
 	u32 result;
 
-	push(&t->str_buf, &s.info, sizeof(str_info));
+	push(&t->str_buf, &s.length, sizeof(u32));
 	
 	cstring src = STRING_TO_CSTRING(s);
 	result = push(&t->str_buf, src, length(s));
@@ -109,14 +109,14 @@ inline
 str get_string(string_table* t, u32 index) {
 	str result;
 
-	assert(index >= sizeof(str_info));
+	assert(index >= sizeof(u32));
 
 	byte_ptr src = t->str_buf.ptr + index;
+	
+	u32 length;
+	memcpy(&length, src - sizeof(u32), sizeof(u32));
 
-	str_info info;
-	memcpy(&info, src - sizeof(str_info), sizeof(str_info));
-
-	result = make_string((cstring)src, info);
+	result = make_string((cstring)src, length);
 
 	return result;
 }
@@ -132,19 +132,19 @@ u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle) {
 	if(entry_index != 0U) {
 		// compare contents
 		if(hash_value == entry_hash) {
-			str_info info;
+			u32 len;
 
 			byte_ptr ptr = stack_ptr(haystack, entry_index); 
-			memcpy(&info, ptr - sizeof(str_info), sizeof(str_info));
+			memcpy(&len, ptr - sizeof(u32), sizeof(u32));
 			
-			if(info.length == length(needle)) {
-				if(memcmp(ptr, STRING_TO_CSTRING(needle), info.length) == 0)
+			if(len == length(needle)) {
+				if(memcmp(ptr, STRING_TO_CSTRING(needle), len) == 0)
 					result = entry_index; //the needle was found
 			}
 		}
 	} else {
 		// empty table entry... insert string
-		push(haystack, &needle.info, 1);
+		push(haystack, &needle.length, 1);
 	
 		cstring src = STRING_TO_CSTRING(needle);
 		u32 needle_length = length(needle);

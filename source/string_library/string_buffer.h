@@ -12,12 +12,7 @@ inline
 str to_string(string_buffer* sb) {
 	str result;
 
-	str_info info;
-
-	info.hash = 0;
-	info.length = length(sb);
-
-	result = make_string((char*)stack_ptr(sb, 0), info);
+	result = make_string((char*)stack_ptr(sb, 0), length(sb));
 
 	return result;
 }
