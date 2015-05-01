@@ -6,12 +6,7 @@
  *  the string primitive in this library is a string reference type (str)
  *  which either contains the string itself if it's as short as the
  *  size of a pointer or a pointer to the string itself, located in memory.
- *
- *  since the str type is a very fat pointer type it will not be suitable for
- *  every need, but designed for safety, easy comparisons and
- *  compatibility with a large hashed string table for unique storage
- *  of strings that may occur repeatedly such as in a program text.
- *
+ *  it also contains the length of the string.
  */
 
 #ifndef STRING_LIBRARY_STR_TYPE_GUARD
@@ -30,7 +25,7 @@
 
 // macro for converting a string literal to a str-object using the
 // array-size finding pattern (excluding the zero-terminator)
-#define MAKE_STRING_FROM_LITERAL(literal) make_string((literal), (sizeof(literal)-1)/sizeof((literal)[0]))
+#define MAKE_STRING_FROM_LITERAL(literal) make_string((literal), (sizeof(literal))/sizeof((literal)[0])-1)
 
 namespace string_library {
 struct str {
