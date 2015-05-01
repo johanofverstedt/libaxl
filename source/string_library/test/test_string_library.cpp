@@ -11,6 +11,10 @@ void fill_table(string_table* st, string_buffer* sb) {
 	u32 take_index = add_string(st, MAKE_STRING_FROM_LITERAL("take"));
 	u32 take_index2 = add_string(st, MAKE_STRING_FROM_LITERAL("take"));
 	u32 u32_index2 = add_string(st, MAKE_STRING_FROM_LITERAL("u32"));
+	u32 u64_index2 = find_string(st, MAKE_STRING_FROM_LITERAL("u64"));
+
+	//Won't be found
+	u32 xx_index = find_string(st, MAKE_STRING_FROM_LITERAL("xx"));
 
 	append(sb, MAKE_STRING_FROM_LITERAL("u8 index: "));
 	append(sb, u8_index);

@@ -122,12 +122,11 @@ str get_string(string_table* t, u32 index) {
 }
 
 inline
-u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle) {
+u32 find_or_add_at_index(table_entry* entry, stack* haystack, str needle, u32 hash_value) {
 	u32 result = 0U; //default to no match
 
 	u32 entry_index = entry->index;
 	u32 entry_hash = entry->hash;
-	u32 hash_value = hash(needle);
 
 	if(entry_index != 0U) {
 		// compare contents
@@ -138,7 +137,7 @@ u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle) {
 			memcpy(&len, ptr - sizeof(u32), sizeof(u32));
 			
 			if(len == length(needle)) {
-				if(memcmp(ptr, STRING_TO_CSTRING(needle), len) == 0)
+				if(memcmp(ptr, STRING_TO_CSTRING(needle), sizeof(char) * len) == 0)
 					result = entry_index; //the needle was found
 			}
 		}
@@ -169,11 +168,61 @@ u32 add_string(string_table* t, str s) {
 
 	// search the first part of the table, from the hash_index and forward
 	for(u32 i = hash_index; i < entry_count && result == 0U; ++i) {
-		result = check_or_add_at_index(entry_array + i, str_buf, s);
+		result = find_or_add_at_index(entry_array + i, str_buf, s, hash_value);
 	}
 	// search the second part of the table, after wrapping around to index 0
 	for(u32 i = 0; i < hash_index && result == 0U; ++i) {
-		result = check_or_add_at_index(entry_array + i, str_buf, s);
+		result = find_or_add_at_index(entry_array + i, str_buf, s, hash_value);
+	}
+
+	return result;
+}
+
+
+inline
+u32 find_at_index(table_entry* entry, stack* haystack, str needle, u32 hash_value) {
+	u32 result = 0U; //default to no match
+
+	u32 entry_index = entry->index;
+	u32 entry_hash = entry->hash;
+
+	// compare contents
+	if(hash_value == entry_hash) {
+		u32 len;
+
+		byte_ptr ptr = stack_ptr(haystack, entry_index); 
+		memcpy(&len, ptr - sizeof(u32), sizeof(u32));
+			
+		if(len == length(needle)) {
+			if(memcmp(ptr, STRING_TO_CSTRING(needle), sizeof(char) * len) == 0)
+				result = entry_index; //the needle was found
+		}
+	}
+
+	return result;
+}
+
+inline
+u32 find_string(string_table* t, str s) {
+	u32 result = 0U;
+
+	stack* str_buf = &t->str_buf;
+	u32 entry_count = t->entry_count;
+	table_entry* entry_array = t->entries;
+	u32 hash_value = hash(s);
+	u32 hash_index = hash_value % entry_count;
+
+	// search the first part of the table, from the hash_index and forward
+	for(u32 i = hash_index; i < entry_count && result == 0U; ++i) {
+		if(entry_array[i].index == 0)
+			return result;
+		result = find_at_index(entry_array + i, str_buf, s, hash_value);
+	}
+	// search the second part of the table, after wrapping around to index 0
+	for(u32 i = 0; i < hash_index && result == 0U; ++i) {
+		if(entry_array[i].index == 0)
+			return result;
+		result = find_at_index(entry_array + i, str_buf, s, hash_value);
 	}
 
 	return result;
