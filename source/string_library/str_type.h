@@ -21,7 +21,7 @@
 #include "hash.h"
 
 // macro for extracting a cstring pointer from a str-object
-#define STRING_TO_CSTRING(s) (cstring)(((s).length <= 8) ? (s).sso_buf : (s).ptr)
+#define STRING_TO_CSTRING(s) (cstring)(((s).length <= sizeof(cstring)) ? (s).sso_buf : (s).ptr)
 
 // macro for converting a string literal to a str-object using the
 // array-size finding pattern (excluding the zero-terminator)
