@@ -130,8 +130,8 @@ u32 push_dup(stack* s, T value, u32 count) {
 	assert(ptr != nullptr);
 	assert(s->top + sizeof(T) * count <= s->capacity);
 
-	byte_ptr ptr = s->ptr;
 	result = s->top;
+	byte_ptr ptr = s->ptr + result;
 
 	for(u32 i = 0; i < count; ++i) {
 		memcpy(ptr + i * sizeof(T), &value, sizeof(T));
@@ -151,8 +151,8 @@ u32 push_dup(stack* s, u8 value, u32 count) {
 	assert(s->ptr != nullptr);
 	assert(s->top + sizeof(u8) * count <= s->capacity);
 
-	byte_ptr ptr = s->ptr;
 	result = s->top;
+	byte_ptr ptr = s->ptr + result;
 
 	memset(ptr, value, count * sizeof(char));
 
@@ -170,8 +170,8 @@ u32 push_dup(stack* s, i8 value, u32 count) {
 	assert(s->ptr != nullptr);
 	assert(s->top + sizeof(i8) * count <= s->capacity);
 
-	byte_ptr ptr = s->ptr;
 	result = s->top;
+	byte_ptr ptr = s->ptr + result;
 
 	memset(ptr, value, count * sizeof(char));
 

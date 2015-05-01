@@ -25,7 +25,12 @@
 #include "types.h"
 #include "hash.h"
 
+// macro for extracting a cstring pointer from a str-object
 #define STRING_TO_CSTRING(s) (cstring)(((s).info.length <= 8) ? (s).sso_buf : (s).ptr)
+
+// macro for converting a string literal to a str-object using the
+// array-size finding pattern (excluding the zero-terminator)
+#define MAKE_STRING_FROM_LITERAL(literal) make_string((literal), (sizeof(literal)-1)/sizeof((literal)[0]))
 
 namespace string_library {
 struct str_info {

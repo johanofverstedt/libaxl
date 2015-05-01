@@ -4,18 +4,20 @@
 using namespace string_library;
 
 void fill_table(string_table* st, string_buffer* sb) {
-	u32 u8_index = add_string(st, make_string("u8"));
-	u32 i8_index = add_string(st, make_string("i8"));
-	u32 u32_index = add_string(st, make_string("u32"));
-	u32 u64_index = add_string(st, make_string("u64"));
-	u32 take_index = add_string(st, make_string("take"));
+	u32 u8_index = add_string(st, MAKE_STRING_FROM_LITERAL("u8"));
+	u32 i8_index = add_string(st, MAKE_STRING_FROM_LITERAL("i8"));
+	u32 u32_index = add_string(st, MAKE_STRING_FROM_LITERAL("u32"));
+	u32 u64_index = add_string(st, MAKE_STRING_FROM_LITERAL("u64"));
+	u32 take_index = add_string(st, MAKE_STRING_FROM_LITERAL("take"));
+	u32 take_index2 = add_string(st, MAKE_STRING_FROM_LITERAL("take"));
+	u32 u32_index2 = add_string(st, MAKE_STRING_FROM_LITERAL("u32"));
 
-	append(sb, make_string("u8 index: "));
+	append(sb, MAKE_STRING_FROM_LITERAL("u8 index: "));
 	append(sb, u8_index);
 	append_line(sb, make_empty_string());
-	append(sb, make_string("u64 index: "));
+	append(sb, MAKE_STRING_FROM_LITERAL("u64 index: "));
 	append(sb, u64_index);
-	append_line(sb, make_empty_string());
+	append_line_indent(sb, MAKE_STRING_FROM_LITERAL(""), 4);
 
 	print(to_string(sb));
 
