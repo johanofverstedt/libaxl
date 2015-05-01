@@ -66,6 +66,24 @@ void append(string_buffer* sb, u64 number) {
 	}
 }
 
+inline
+void append(string_buffer* sb, i64 number) {
+	char* first = (char*)stack_top_ptr(sb);
+
+	//push the digits in reverse order
+
+	if(number < 0LL) {
+		push(sb, '-');
+
+		if(number == -9223372036854775808LL)
+			append(sb, 9223372036854775808ULL);
+		else
+			append(sb, (u64)(-unsigned_number));
+	} else {
+		append(sb, (u64)number);
+	}
+}
+
 }
 
 #endif
