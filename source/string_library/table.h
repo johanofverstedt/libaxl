@@ -99,7 +99,7 @@ u32 push_string(string_table* t, str s) {
 
 	push(&t->str_buf, &s.info, sizeof(str_info));
 	
-	cstring src = string_to_cstring(&s);
+	cstring src = STRING_TO_CSTRING(s);
 	result = push(&t->str_buf, src, length(s));
 
 	return result;
@@ -138,7 +138,7 @@ u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle) {
 			memcpy(&info, ptr - sizeof(str_info), sizeof(str_info));
 			
 			if(info.length == length(needle)) {
-				if(memcmp(ptr, string_to_cstring(&needle), info.length) == 0)
+				if(memcmp(ptr, STRING_TO_CSTRING(needle), info.length) == 0)
 					result = entry_index; //the needle was found
 			}
 		}
@@ -146,7 +146,7 @@ u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle) {
 		// empty table entry... insert string
 		push(haystack, &needle.info, 1);
 	
-		cstring src = string_to_cstring(&needle);
+		cstring src = STRING_TO_CSTRING(needle);
 		u32 needle_length = length(needle);
 		result = push(haystack, src, needle_length);
 

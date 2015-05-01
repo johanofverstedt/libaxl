@@ -24,7 +24,7 @@ str to_string(string_buffer* sb) {
 
 inline
 void append(string_buffer* sb, str s) {
-	push(sb, string_to_cstring(&s), length(s));
+	push(sb, STRING_TO_CSTRING(s), length(s));
 }
 
 inline
