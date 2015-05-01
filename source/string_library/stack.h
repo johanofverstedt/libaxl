@@ -82,6 +82,26 @@ u32 push_zeros(stack* s, u32 count) {
 
 template <typename T>
 inline
+u32 push(stack* s, T value) {
+	u32 result;
+
+	// preconditions
+	assert(s != nullptr);
+	assert(s->ptr != nullptr);
+	assert(ptr != nullptr);
+	assert(s->top + sizeof(T) <= s->capacity);
+
+	result = s->top;
+
+	memcpy(s->ptr + result, &value, sizeof(T));
+
+	s->top = result + sizeof(T);
+
+	return result;
+}
+
+template <typename T>
+inline
 u32 push(stack* s, T* ptr, u32 count) {
 	u32 result;
 
