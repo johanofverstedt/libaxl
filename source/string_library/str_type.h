@@ -121,6 +121,30 @@ cstring string_to_cstring(str* s, u32 index) {
 }
 
 inline
+str take(str s, u32 count) {
+	str result;
+
+	assert(count <= length(s));
+
+	result = make_string(STRING_TO_CSTRING(s), count);
+
+	return result;
+}
+
+inline
+str drop(str s, u32 count) {
+	str result;
+
+	auto len = length(s);
+
+	assert(count <= len);
+
+	result = make_string(STRING_TO_CSTRING(s) + count, len - count);
+
+	return result;
+}
+
+inline
 void print(str s) {
 	cstring ptr = STRING_TO_CSTRING(s);
 

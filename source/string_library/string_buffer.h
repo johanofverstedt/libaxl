@@ -12,7 +12,7 @@ inline
 str to_string(string_buffer* sb) {
 	str result;
 
-	result = make_string((char*)stack_ptr(sb, 0), length(sb));
+	result = make_string((cstring)stack_ptr(sb, 0), length(sb));
 
 	return result;
 }
