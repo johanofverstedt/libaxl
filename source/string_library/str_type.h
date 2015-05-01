@@ -25,6 +25,8 @@
 #include "types.h"
 #include "hash.h"
 
+#define STRING_TO_CSTRING(s) (((s).info.length <= 8) ? (s).sso_buf : (s).ptr)
+
 namespace string_library {
 struct str_info {
 	u32 length;
@@ -97,6 +99,16 @@ str make_string(cstring s) {
 }
 
 inline
+str make_empty_string() {
+	str result;
+
+	result.info.length = 0;
+	result.info.hash = hash_u32("", 0U);
+
+	return result;
+}
+
+inline
 u32 length(str s) {
 	u32 result = s.info.length;
 
@@ -111,28 +123,28 @@ u32 hash(str s) {
 }
 
 inline
-cstring string_to_cstring(str s) {
+cstring string_to_cstring(str* s) {
 	cstring result;
 
-	if(s.info.length <= sizeof(cstring)) {
-		result = (cstring)s.sso_buf;
+	if(s->info.length <= sizeof(cstring)) {
+		result = (cstring)s->sso_buf;
 	} else {
-		result = s.ptr;
+		result = s->ptr;
 	}
 
 	return result;	
 }
 
 inline
-cstring string_to_cstring(str s, u32 index) {
+cstring string_to_cstring(str* s, u32 index) {
 	cstring result;
 
-	assert(index <= s.info.length);
+	assert(index <= s->info.length);
 
-	if(s.info.length < sizeof(cstring)) {
-		result = (cstring)s.sso_buf + index;
+	if(s->info.length < sizeof(cstring)) {
+		result = (cstring)s->sso_buf + index;
 	} else {
-		result = s.ptr + index;
+		result = s->ptr + index;
 	}
 
 	return result;	
@@ -140,7 +152,7 @@ cstring string_to_cstring(str s, u32 index) {
 
 inline
 void print(str s) {
-	cstring ptr = string_to_cstring(s);
+	cstring ptr = string_to_cstring(&s);
 
 	fwrite(ptr, sizeof(char), s.info.length, stdout);
 }
@@ -151,10 +163,10 @@ bool operator==(str s1, str s2) {
 		return false;
 	if(s1.info.length != s2.info.length)
 		return false;
-	cstring s1_ptr = string_to_cstring(s1);
-	cstring s2_ptr = string_to_cstring(s2);
+	cstring s1_ptr = string_to_cstring(&s1);
+	cstring s2_ptr = string_to_cstring(&s2);
 
-	for(u32 i = 0; i < s1.info.length) {
+	for (u32 i = 0; i < s1.info.length; ++i) {
 		if(s1_ptr[i] != s2_ptr[i])
 			return false;
 	}
@@ -171,8 +183,8 @@ inline
 bool operator<(str s1, str s2) {
 	u32 len = (s1.info.length < s2.info.length) ? s1.info.length : s2.info.length;
 	u32 i = 0;
-	cstring s1_ptr = string_to_cstring(s1);
-	cstring s2_ptr = string_to_cstring(s2);
+	cstring s1_ptr = string_to_cstring(&s1);
+	cstring s2_ptr = string_to_cstring(&s2);
 
 	while(i < len) {
 		if(s1_ptr[i] != s2_ptr[i])
@@ -187,8 +199,8 @@ inline
 bool operator>(str s1, str s2) {
 	u32 len = (s1.info.length < s2.info.length) ? s1.info.length : s2.info.length;
 	u32 i = 0;
-	cstring s1_ptr = string_to_cstring(s1);
-	cstring s2_ptr = string_to_cstring(s2);
+	cstring s1_ptr = string_to_cstring(&s1);
+	cstring s2_ptr = string_to_cstring(&s2);
 
 	while(i < len) {
 		if(s1_ptr[i] != s2_ptr[i])

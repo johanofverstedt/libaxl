@@ -52,24 +52,24 @@ struct string_table {
 
 inline
 u32 next_suitable_size(u32 requested_size) {
-	u32 len = sizeof(table_sizes) / sizeof(table_sizes[0]);
+	u32 len = sizeof(HASH_TABLE_SIZES) / sizeof(HASH_TABLE_SIZES[0]);
 	u32 len_1 = len - 1;
 
-	assert(requested_size <= table_sizes[len_1]);
+	assert(requested_size <= HASH_TABLE_SIZES[len_1]);
 
 	for(u32 i = 0; i < len_1; ++i) {
-		if(requested_size <= table_sizes[i])
-			return table_sizes[i];
+		if (requested_size <= HASH_TABLE_SIZES[i])
+			return HASH_TABLE_SIZES[i];
 	}
 
-	return table_sizes[len_1];
+	return HASH_TABLE_SIZES[len_1];
 }
 
 inline
 string_table make_string_table(u32 string_buffer_length, u32 hash_table_length) {
 	string_table result;
 
-	result.str_buf = make_stack(malloc(string_buffer_length), string_buffer_length);
+	result.str_buf = make_stack((byte_ptr)malloc(string_buffer_length), string_buffer_length);
 
 	result.entry_count = next_suitable_size(hash_table_length);
 	result.entries = (table_entry*)malloc(result.entry_count * sizeof(table_entry));
@@ -89,8 +89,6 @@ void free_string_table(string_table* t) {
 	t->str_buf.ptr = nullptr;
 	t->entries = nullptr;
 
-	t->top = 0;
-	t->capacity = 0;
 	t->entries = 0;
 	t->entry_count = 0;
 }
@@ -101,7 +99,7 @@ u32 push_string(string_table* t, str s) {
 
 	push(&t->str_buf, &s.info, sizeof(str_info));
 	
-	cstring src = string_to_cstring(s);
+	cstring src = string_to_cstring(&s);
 	result = push(&t->str_buf, src, length(s));
 
 	return result;
@@ -118,7 +116,7 @@ str get_string(string_table* t, u32 index) {
 	str_info info;
 	memcpy(&info, src - sizeof(str_info), sizeof(str_info));
 
-	result = make_string(src, info);
+	result = make_string((cstring)src, info);
 
 	return result;
 }
@@ -139,17 +137,18 @@ u32 check_or_add_at_index(table_entry* entry, stack* haystack, str needle) {
 			byte_ptr ptr = stack_ptr(haystack, entry_index); 
 			memcpy(&info, ptr - sizeof(str_info), sizeof(str_info));
 			
-			if(info.length == length(s)) {
-				if(memcmp(ptr, string_to_cstring(s), info.length) == 0)
+			if(info.length == length(needle)) {
+				if(memcmp(ptr, string_to_cstring(&needle), info.length) == 0)
 					result = entry_index; //the needle was found
 			}
 		}
 	} else {
 		// empty table entry... insert string
-		push(haystack, &needle.info, sizeof(str_info));
+		push(haystack, &needle.info, 1);
 	
-		cstring src = string_to_cstring(needle);
-		result = push(haystack, src, length(s));
+		cstring src = string_to_cstring(&needle);
+		u32 needle_length = length(needle);
+		result = push(haystack, src, needle_length);
 
 		entry->index = result;
 		entry->hash = hash_value;
@@ -162,7 +161,7 @@ inline
 u32 add_string(string_table* t, str s) {
 	u32 result = 0U;
 
-	stack* str_buf = t->str_buf;
+	stack* str_buf = &t->str_buf;
 	u32 entry_count = t->entry_count;
 	table_entry* entry_array = t->entries;
 	u32 hash_value = hash(s);

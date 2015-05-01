@@ -88,7 +88,6 @@ u32 push(stack* s, T value) {
 	// preconditions
 	assert(s != nullptr);
 	assert(s->ptr != nullptr);
-	assert(ptr != nullptr);
 	assert(s->top + sizeof(T) <= s->capacity);
 
 	result = s->top;
@@ -150,15 +149,14 @@ u32 push_dup(stack* s, u8 value, u32 count) {
 	// preconditions
 	assert(s != nullptr);
 	assert(s->ptr != nullptr);
-	assert(ptr != nullptr);
-	assert(s->top + sizeof(T) * count <= s->capacity);
+	assert(s->top + sizeof(u8) * count <= s->capacity);
 
 	byte_ptr ptr = s->ptr;
 	result = s->top;
 
 	memset(ptr, value, count * sizeof(char));
 
-	s->top = result + count * sizeof(T);
+	s->top = result + count * sizeof(u8);
 
 	return result;
 }
@@ -170,15 +168,14 @@ u32 push_dup(stack* s, i8 value, u32 count) {
 	// preconditions
 	assert(s != nullptr);
 	assert(s->ptr != nullptr);
-	assert(ptr != nullptr);
-	assert(s->top + sizeof(T) * count <= s->capacity);
+	assert(s->top + sizeof(i8) * count <= s->capacity);
 
 	byte_ptr ptr = s->ptr;
 	result = s->top;
 
 	memset(ptr, value, count * sizeof(char));
 
-	s->top = result + count * sizeof(T);
+	s->top = result + count * sizeof(i8);
 
 	return result;
 }
@@ -237,14 +234,14 @@ byte_ptr resize_stack(stack* s, byte_ptr new_buffer, u32 new_capacity) {
 	assert(s != nullptr);
 	assert(s->ptr != nullptr);
 	assert(new_buffer != nullptr);
-	assert(s->used <= new_capacity);
+	assert(s->top <= new_capacity);
 
 	byte_ptr old_ptr = s->ptr;
 	if(old_ptr != new_buffer) { // support for realloc
-		memcpy(new_buffer, old_ptr, s->used);
+		memcpy(new_buffer, old_ptr, s->top);
 	}
 
-	s->capcity = new_capacity;
+	s->capacity = new_capacity;
 
 	return old_ptr;
 }

@@ -24,7 +24,7 @@ str to_string(string_buffer* sb) {
 
 inline
 void append(string_buffer* sb, str s) {
-	push(sb, string_to_cstring(s), length(s));
+	push(sb, string_to_cstring(&s), length(s));
 }
 
 inline
@@ -67,6 +67,11 @@ void append(string_buffer* sb, u64 number) {
 }
 
 inline
+void append(string_buffer* sb, u32 number) {
+	append(sb, (u64)number);
+}
+
+inline
 void append(string_buffer* sb, i64 number) {
 	char* first = (char*)stack_top_ptr(sb);
 
@@ -78,10 +83,15 @@ void append(string_buffer* sb, i64 number) {
 		if(number == -9223372036854775808LL)
 			append(sb, 9223372036854775808ULL);
 		else
-			append(sb, (u64)(-unsigned_number));
+			append(sb, (u64)(-number));
 	} else {
 		append(sb, (u64)number);
 	}
+}
+
+inline
+void append(string_buffer* sb, i32 number) {
+	append(sb, (i64)number);
 }
 
 }
