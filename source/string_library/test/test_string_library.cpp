@@ -30,6 +30,10 @@ void fill_table(string_table* st, string_buffer* sb) {
 	append(sb, u64_index);
 	append_line_indent(sb, MAKE_STRING_FROM_LITERAL(""), 4);
 
+	append(sb, -9223372036854775807LL);
+	append_line_indent(sb, make_empty_string(), 4);
+	append_line_indent(sb, get_string(st, array_double_index), 4);
+
 	print(to_string(sb));
 
 	print(get_string(st, take_index));

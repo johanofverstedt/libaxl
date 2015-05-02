@@ -41,8 +41,10 @@ void append(string_buffer* sb, u64 number) {
 	//push the digits in reverse order
 
 	do {
-		char digit = '0' + (char)(number % 10ULL);
-		number /= 10ULL;
+		u64 old_number = number;
+		number = number / 10ULL;
+		u64 mod = old_number - (number * 10ULL);
+		char digit = '0' + (char)mod;
 		push(sb, digit);
 	} while(number);
 
