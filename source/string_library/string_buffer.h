@@ -27,6 +27,7 @@ void append_line(string_buffer* sb, str s) {
 	append(sb, s);
 	push(sb, '\n');
 }
+
 inline
 void append_line_indent(string_buffer* sb, str s, u32 indent) {
 	append(sb, s);
@@ -89,6 +90,18 @@ void append(string_buffer* sb, i64 number) {
 inline
 void append(string_buffer* sb, i32 number) {
 	append(sb, (i64)number);
+}
+
+inline
+void append(string_buffer* sb, char c) {
+	push(sb, c);
+}
+
+inline
+void append_c_string_literal(string_buffer* sb, str s) {
+	append(sb, '\"');
+	append(sb, s);
+	append(sb, '\"');
 }
 
 }
