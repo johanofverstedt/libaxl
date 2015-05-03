@@ -33,9 +33,14 @@ void fill_table(string_table* st, string_buffer* sb) {
 	append(sb, -9223372036854775807LL);
 	append_line_indent(sb, make_empty_string(), 4);
 	append_line_indent(sb, get_string(st, array_double_index), 4);
+	append_c_string_literal(sb, get_string(st, array_double_index));
+	append_line_indent(sb, make_empty_string(), 4);
+
+	append(sb, array_i8_string[6]);
+	append_line_indent(sb, make_empty_string(), 4);
 
 	print(to_string(sb));
-
+		
 	print(get_string(st, take_index));
 }
 

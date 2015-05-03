@@ -34,6 +34,15 @@ struct str {
 		char    sso_buf[sizeof(cstring)];
 	};
 	u32 length;
+
+	inline
+	char operator[](u32 index) {
+		assert(index < length);
+		
+		return length <= sizeof(cstring) ?
+			sso_buf[index] :
+			ptr[index];
+	}
 };
 
 inline
