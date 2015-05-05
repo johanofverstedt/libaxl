@@ -9,6 +9,24 @@ namespace string_library {
 using string_buffer = stack;
 
 inline
+string_buffer make_string_buffer(u32 size) {
+	string_buffer result;
+
+	result = make_stack((byte_ptr)malloc(size * sizeof(char)), size);
+
+	return result;
+}
+
+inline
+string_buffer make_string_buffer(cstring ptr, u32 size) {
+	string_buffer result;
+
+	result = make_stack((byte_ptr)ptr, size);
+
+	return result;
+}
+
+inline
 str to_string(string_buffer* sb) {
 	str result;
 

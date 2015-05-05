@@ -1,6 +1,5 @@
 
 #include "../string_library.h"
-#include "../uint_to_thread_id.h"
 
 using namespace string_library;
 
@@ -47,7 +46,7 @@ void fill_table(string_table* st, string_buffer* sb) {
 
 int main(int argc, char** argv) {
 	string_table st = make_string_table(1024 * 1024, 256 * 1024);
-	string_buffer sb = make_stack((byte_ptr)malloc(1024 * 1024), 1024 * 1024);
+	string_buffer sb = make_string_buffer(1024U * 1024U);//make_stack((byte_ptr)malloc(1024 * 1024), 1024 * 1024);
 
 	fill_table(&st, &sb);
 
