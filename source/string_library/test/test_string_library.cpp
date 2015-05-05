@@ -1,5 +1,6 @@
 
 #include "../string_library.h"
+#include "../uint_to_thread_id.h"
 
 using namespace string_library;
 
@@ -39,8 +40,29 @@ void fill_table(string_table* st, string_buffer* sb) {
 	append(sb, array_i8_string[6]);
 	append_line_indent(sb, make_empty_string(), 4);
 
+	u32 thread_count = 8U;
+	u32 counter[8U];
+	for (u32 i = 0U; i < thread_count; ++i)
+		counter[i] = 0U;
+
+	for (u32 i = 0; i < 100; ++i) {
+		u32 v = uint_to_thread_id(i, thread_count);
+		++counter[v];
+		append(sb, v);
+		append_line_indent(sb, make_empty_string(), 4);
+	}
+
+	for (u32 i = 0U; i < thread_count; ++i) {
+		append(sb, MAKE_STRING_FROM_LITERAL("counter["));
+		append(sb, i);
+		append(sb, MAKE_STRING_FROM_LITERAL("]:"));
+		append(sb, counter[i]);
+		append_line_indent(sb, make_empty_string(), 4);
+	}
+
+
 	print(to_string(sb));
-		
+				
 	print(get_string(st, take_index));
 }
 
